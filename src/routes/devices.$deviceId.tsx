@@ -1,0 +1,261 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Bookmark, ChevronLeft, GitCompare, Sparkles, ShieldCheck, Cpu, Zap, Activity } from "lucide-react";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { AppShell } from "@/components/atlas/AppShell";
+import { ConfidenceBadge } from "@/components/atlas/DeviceCard";
+import { getDevice } from "@/lib/atlas/data";
+import { useAtlas } from "@/lib/atlas/store";
+
+export const Route = createFileRoute("/devices/$deviceId")({
+  component: DeviceDetail,
+});
+
+const TABS = ["Overview", "Technical", "AI Features", "Operational", "Financial", "Compatibility", "Clinical"] as const;
+type Tab = typeof TABS[number];
+
+function DeviceDetail() {
+  const { deviceId } = Route.useParams();
+  const device = getDevice(deviceId);
+  const { savedDevices, toggleSaved, comparisonIds, toggleCompare, pushRecent } = useAtlas();
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<Tab>("Overview");
+
+  useEffect(() => { if (device) pushRecent(device.id); }, [device, pushRecent]);
+
+  if (!device) {
+    return (
+      <AppShell>
+        <div className="panel-elevated p-10 text-center">
+          <p className="text-sm">Device not found.</p>
+          <Link to="/explore" className="mt-4 inline-flex chip chip-accent">Back to Explore</Link>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const saved = savedDevices.includes(device.id);
+  const inCompare = comparisonIds.includes(device.id);
+  const Icon = device.modality === "MRI" ? Cpu : Zap;
+
+  return (
+    <AppShell right={<AIPanel deviceId={device.id} />}>
+      <button onClick={() => navigate({ to: "/explore" })} className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mb-3"><ChevronLeft className="size-3.5" /> Explore</button>
+
+      {/* Hero */}
+      <motion.section initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="glass-panel rounded-2xl p-6 lg:p-7">
+        <div className="flex items-start gap-5 flex-wrap">
+          <div className="size-16 rounded-xl bg-gradient-to-br from-[var(--color-primary)]/20 to-[var(--color-info)]/10 grid place-items-center border border-border">
+            <Icon className="size-7 text-[var(--color-primary)]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span className="chip">{device.modality}</span>
+              <span>{device.vendor}</span><span>·</span>
+              <span>{device.releaseYear}</span><span>·</span>
+              <span>{device.budgetTier} tier</span>
+            </div>
+            <h1 className="mt-1 text-2xl lg:text-3xl font-semibold tracking-tight">{device.name}</h1>
+            <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{device.tagline}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => toggleSaved(device.id)} className={`h-9 px-3 rounded-md border border-border text-sm flex items-center gap-1.5 ${saved ? "text-[var(--color-primary)] border-primary/40" : "text-muted-foreground hover:text-foreground"}`}>
+              <Bookmark className={`size-4 ${saved ? "fill-current" : ""}`} /> {saved ? "Saved" : "Save"}
+            </button>
+            <button onClick={() => toggleCompare(device.id)} className={`h-9 px-3 rounded-md border border-border text-sm flex items-center gap-1.5 ${inCompare ? "text-[var(--color-primary)] border-primary/40" : "text-muted-foreground hover:text-foreground"}`}>
+              <GitCompare className="size-4" /> {inCompare ? "In Compare" : "Compare"}
+            </button>
+            <Link to="/assistant" className="h-9 px-3 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm flex items-center gap-1.5">
+              <Sparkles className="size-4" /> Ask AI
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <HeroStat label={device.modality === "MRI" ? "Field strength" : "Slices"} value={device.modality === "MRI" ? `${device.fieldStrengthT}T` : `${device.sliceCount}`} />
+          <HeroStat label="Throughput" value={`${device.throughputPerDay} / day`} />
+          <HeroStat label="Est. capex" value={`$${device.estCostUSDm.toFixed(2)}M`} />
+          <HeroStat label="ROI window" value={`~${device.roiYears} yrs`} />
+        </div>
+      </motion.section>
+
+      {/* Tabs */}
+      <div className="mt-5 flex flex-wrap gap-1 border-b border-border">
+        {TABS.map(t => (
+          <button key={t} onClick={() => setTab(t)} className={`px-3 py-2 text-xs font-medium border-b-2 transition ${tab === t ? "border-[var(--color-primary)] text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>{t}</button>
+        ))}
+      </div>
+
+      <div className="mt-5">
+        {tab === "Overview" && <OverviewTab device={device} />}
+        {tab === "Technical" && <KVList items={[
+          ["Modality", device.modality],
+          ["Vendor", device.vendor],
+          ["Release year", String(device.releaseYear)],
+          ...(device.modality === "MRI"
+            ? [["Field strength", `${device.fieldStrengthT}T`], ["Bore", `${device.boreCm} cm`], ["Gradient strength", `${device.gradientStrength} mT/m`]] as [string, string][]
+            : [["Slices", String(device.sliceCount)], ["Detector rows", String(device.detectorRows)], ["Rotation time", `${device.rotationTimeS} s`]] as [string, string][]),
+          ["Power draw", `${device.powerKW} kW`],
+        ]} />}
+        {tab === "AI Features" && (
+          <div className="panel-elevated p-5">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-semibold">AI capabilities</div>
+              <span className="chip">Maturity {device.aiMaturity}/5</span>
+            </div>
+            <ul className="mt-3 grid sm:grid-cols-2 gap-2">
+              {device.aiCapabilities.map(c => (
+                <li key={c} className="rounded-md border border-border p-3 text-sm">
+                  <div className="flex items-center gap-2"><Sparkles className="size-3.5 text-[var(--color-primary)]" />{c}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {tab === "Operational" && <KVList items={[
+          ["Throughput", `${device.throughputPerDay} exams/day`],
+          ["Uptime", `${device.uptimePct}%`],
+          ["Setup", `${device.setupWeeks} weeks`],
+          ["Operational complexity", device.complexity],
+          ["Maintenance burden", `${device.maintenanceBurden}/5`],
+        ]} />}
+        {tab === "Financial" && <KVList items={[
+          ["Estimated capital cost", `$${device.estCostUSDm.toFixed(2)}M`],
+          ["Cost per scan", `$${device.costPerScanUSD}`],
+          ["ROI window", `~${device.roiYears} yrs`],
+          ["Budget tier", device.budgetTier],
+        ]} />}
+        {tab === "Compatibility" && (
+          <div className="panel-elevated p-5">
+            <div className="text-sm font-semibold">Standards &amp; integration</div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {device.standards.map(s => <span key={s} className="chip chip-accent">{s}</span>)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-4 leading-relaxed flex items-start gap-2">
+              <ShieldCheck className="size-3.5 mt-0.5 shrink-0" />
+              Integration notes are planning-grade only. Verify with vendor before procurement decisions.
+            </p>
+          </div>
+        )}
+        {tab === "Clinical" && (
+          <div className="panel-elevated p-5">
+            <div className="text-sm font-semibold">Clinical suitability</div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {device.clinicalTags.map(t => <span key={t} className="chip">{t}</span>)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">Atlas tags reflect typical procurement positioning. Always validate against clinical workflow.</p>
+          </div>
+        )}
+      </div>
+    </AppShell>
+  );
+}
+
+function HeroStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-border bg-[var(--color-surface)]/60 p-3">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-lg font-semibold text-mono mt-0.5">{value}</div>
+    </div>
+  );
+}
+
+function KVList({ items }: { items: [string, string][] }) {
+  return (
+    <div className="panel-elevated divide-y divide-border">
+      {items.map(([k, v]) => (
+        <div key={k} className="flex items-center justify-between px-4 py-3 text-sm">
+          <span className="text-muted-foreground">{k}</span>
+          <span className="font-medium text-mono">{v}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function OverviewTab({ device }: { device: ReturnType<typeof getDevice> & {} }) {
+  return (
+    <div className="grid lg:grid-cols-2 gap-4">
+      <div className="panel-elevated p-5">
+        <div className="text-sm font-semibold flex items-center gap-2"><Activity className="size-4 text-[var(--color-primary)]" /> Headline value</div>
+        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{device.tagline}</p>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <Mini label="AI Maturity" value={`${device.aiMaturity}/5`} />
+          <Mini label="Uptime" value={`${device.uptimePct}%`} />
+          <Mini label="Complexity" value={device.complexity} />
+          <Mini label="Maint. burden" value={`${device.maintenanceBurden}/5`} />
+        </div>
+      </div>
+      <div className="panel-elevated p-5">
+        <div className="text-sm font-semibold">Best-fit scenarios</div>
+        <ul className="mt-3 flex flex-col gap-2 text-sm">
+          {device.clinicalTags.map(t => (
+            <li key={t} className="rounded-md border border-border px-3 py-2 flex items-center justify-between">
+              <span className="capitalize">{t}</span>
+              <span className="chip chip-accent">recommended</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function Mini({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-border p-2.5">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-sm font-semibold text-mono">{value}</div>
+    </div>
+  );
+}
+
+function AIPanel({ deviceId }: { deviceId: string }) {
+  const device = getDevice(deviceId)!;
+  const strengths = [
+    `AI maturity ${device.aiMaturity}/5 with ${device.aiCapabilities.length} flagship capabilities`,
+    `Throughput ${device.throughputPerDay}/day at ${device.uptimePct}% uptime`,
+    `Strong fit for ${device.clinicalTags.slice(0, 3).join(", ")}`,
+  ];
+  const tradeoffs: string[] = [];
+  if (device.budgetTier === "Flagship" || device.budgetTier === "Premium") tradeoffs.push(`Higher capex (~$${device.estCostUSDm.toFixed(1)}M)`);
+  if (device.complexity === "High") tradeoffs.push("Requires advanced operator training");
+  if (device.maintenanceBurden >= 4) tradeoffs.push("Above-average maintenance burden");
+  if (!tradeoffs.length) tradeoffs.push("Balanced platform — minimal structural tradeoffs");
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="glass-panel rounded-lg p-4">
+        <div className="flex items-center justify-between">
+          <div className="text-xs font-semibold flex items-center gap-1.5"><Sparkles className="size-3.5 text-[var(--color-primary)]" /> AI Summary</div>
+          <ConfidenceBadge value={device.confidence} />
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
+          {device.name} is positioned in the {device.budgetTier.toLowerCase()} tier with strong alignment to {device.clinicalTags.slice(0, 2).join(" and ")} workflows. Atlas confidence is anchored on vendor specs and benchmark patterns.
+        </p>
+      </div>
+
+      <div className="panel-elevated p-4">
+        <div className="text-xs font-semibold mb-2">Strengths</div>
+        <ul className="flex flex-col gap-1.5 text-[11px] text-muted-foreground">
+          {strengths.map(s => <li key={s} className="flex gap-2"><span className="text-[var(--color-success)]">+</span>{s}</li>)}
+        </ul>
+      </div>
+
+      <div className="panel-elevated p-4">
+        <div className="text-xs font-semibold mb-2">Tradeoffs</div>
+        <ul className="flex flex-col gap-1.5 text-[11px] text-muted-foreground">
+          {tradeoffs.map(s => <li key={s} className="flex gap-2"><span className="text-[var(--color-warning)]">!</span>{s}</li>)}
+        </ul>
+      </div>
+
+      <div className="panel-elevated p-4">
+        <div className="text-xs font-semibold mb-2">Provenance</div>
+        <div className="flex flex-wrap gap-1">
+          {device.sources.map(s => <span key={s} className="chip">{s}</span>)}
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-3 leading-relaxed">AI-generated guidance, not medical advice.</p>
+      </div>
+    </div>
+  );
+}
