@@ -9,15 +9,29 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SavedRouteImport } from './routes/saved'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DevicesDeviceIdRouteImport } from './routes/devices.$deviceId'
 
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InsightsRoute = InsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExploreRoute = ExploreRouteImport.update({
@@ -28,6 +42,16 @@ const ExploreRoute = ExploreRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssistantRoute = AssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -43,55 +67,107 @@ const DevicesDeviceIdRoute = DevicesDeviceIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
+  '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
+  '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/saved': typeof SavedRoute
   '/devices/$deviceId': typeof DevicesDeviceIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
+  '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
+  '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/saved': typeof SavedRoute
   '/devices/$deviceId': typeof DevicesDeviceIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
+  '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
+  '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/saved': typeof SavedRoute
   '/devices/$deviceId': typeof DevicesDeviceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/explore' | '/login' | '/devices/$deviceId'
+  fullPaths:
+    | '/'
+    | '/assistant'
+    | '/compare'
+    | '/dashboard'
+    | '/explore'
+    | '/insights'
+    | '/login'
+    | '/saved'
+    | '/devices/$deviceId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/explore' | '/login' | '/devices/$deviceId'
+  to:
+    | '/'
+    | '/assistant'
+    | '/compare'
+    | '/dashboard'
+    | '/explore'
+    | '/insights'
+    | '/login'
+    | '/saved'
+    | '/devices/$deviceId'
   id:
     | '__root__'
     | '/'
+    | '/assistant'
+    | '/compare'
     | '/dashboard'
     | '/explore'
+    | '/insights'
     | '/login'
+    | '/saved'
     | '/devices/$deviceId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssistantRoute: typeof AssistantRoute
+  CompareRoute: typeof CompareRoute
   DashboardRoute: typeof DashboardRoute
   ExploreRoute: typeof ExploreRoute
+  InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
+  SavedRoute: typeof SavedRoute
   DevicesDeviceIdRoute: typeof DevicesDeviceIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/insights': {
+      id: '/insights'
+      path: '/insights'
+      fullPath: '/insights'
+      preLoaderRoute: typeof InsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explore': {
@@ -106,6 +182,20 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assistant': {
+      id: '/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -127,9 +217,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssistantRoute: AssistantRoute,
+  CompareRoute: CompareRoute,
   DashboardRoute: DashboardRoute,
   ExploreRoute: ExploreRoute,
+  InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
+  SavedRoute: SavedRoute,
   DevicesDeviceIdRoute: DevicesDeviceIdRoute,
 }
 export const routeTree = rootRouteImport
