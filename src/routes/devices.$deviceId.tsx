@@ -79,14 +79,21 @@ function DeviceDetail() {
         </div>
       </motion.section>
 
-      {/* Tabs */}
-      <div className="mt-5 flex flex-wrap gap-1 border-b border-border">
-        {TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`px-3 py-2 text-xs font-medium border-b-2 transition ${tab === t ? "border-[var(--color-primary)] text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>{t}</button>
-        ))}
-      </div>
+      {/* Vertical Tabs layout */}
+      <div className="mt-5 grid md:grid-cols-[200px_1fr] gap-5">
+        <div className="md:sticky md:top-20 self-start">
+          {/* Mobile: select fallback */}
+          <select value={tab} onChange={e => setTab(e.target.value as Tab)} className="md:hidden w-full h-9 px-3 rounded-md bg-[var(--color-input)] border border-border text-sm">
+            {TABS.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <nav className="hidden md:flex flex-col gap-0.5 panel-elevated p-1.5">
+            {TABS.map(t => (
+              <button key={t} onClick={() => setTab(t)} className={`text-left text-xs px-3 py-2 rounded-md transition border border-transparent ${tab === t ? "bg-[var(--color-accent)]/60 text-foreground border-primary/30 font-medium" : "text-muted-foreground hover:text-foreground hover:bg-[var(--color-secondary)]/50"}`}>{t}</button>
+            ))}
+          </nav>
+        </div>
 
-      <div className="mt-5">
+        <div className="min-w-0">
         {tab === "Overview" && <OverviewTab device={device} />}
         {tab === "Technical" && <KVList items={[
           ["Modality", device.modality],
@@ -146,6 +153,7 @@ function DeviceDetail() {
             <p className="text-xs text-muted-foreground mt-4">Atlas tags reflect typical procurement positioning. Always validate against clinical workflow.</p>
           </div>
         )}
+        </div>
       </div>
     </AppShell>
   );

@@ -1,5 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { Bookmark, GitCompare, Sparkles, Cpu, Gauge, Zap } from "lucide-react";
+import { Bookmark, GitCompare, Sparkles, Cpu, Gauge, Zap, Radio, Activity, Scan, Atom } from "lucide-react";
+import type { Modality } from "@/lib/atlas/types";
+
+const MOD_ICON: Record<Modality, typeof Cpu> = {
+  "MRI": Cpu, "CT": Zap, "X-ray": Radio, "Ultrasound": Activity, "Mammography": Scan, "PET/CT": Atom,
+};
 import { motion } from "framer-motion";
 import type { Device } from "@/lib/atlas/types";
 import { useAtlas } from "@/lib/atlas/store";
@@ -27,7 +32,7 @@ export function DeviceCard({ device }: { device: Device }) {
     >
       <div className="flex items-start gap-3">
         <div className="size-12 rounded-md bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-secondary)] grid place-items-center border border-border">
-          {device.modality === "MRI" ? <Cpu className="size-5 text-[var(--color-primary)]" /> : <Zap className="size-5 text-[var(--color-info)]" />}
+          {(() => { const I = MOD_ICON[device.modality] ?? Cpu; return <I className="size-5 text-[var(--color-primary)]" />; })()}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
@@ -45,7 +50,7 @@ export function DeviceCard({ device }: { device: Device }) {
       <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{device.tagline}</p>
 
       <div className="grid grid-cols-3 gap-2 text-[11px]">
-        <Stat label={device.modality === "MRI" ? "Field" : "Slices"} value={device.modality === "MRI" ? `${device.fieldStrengthT}T` : `${device.sliceCount}`} />
+        <Stat label={device.modality === "MRI" ? "Field" : device.modality === "CT" || device.modality === "PET/CT" ? "Slices" : "Vendor"} value={device.modality === "MRI" ? `${device.fieldStrengthT}T` : (device.modality === "CT" || device.modality === "PET/CT") ? `${device.sliceCount ?? "—"}` : device.budgetTier} />
         <Stat label="Throughput" value={`${device.throughputPerDay}/d`} />
         <Stat label="AI" value={`${device.aiMaturity}/5`} />
       </div>

@@ -89,10 +89,39 @@
   --chart-5: oklch(0.68 0.18 305);
 }
 
-.dark {
-  /* same palette — app is dark by default */
-  --background: oklch(0.18 0.02 250);
-  --foreground: oklch(0.96 0.01 240);
+.light {
+  --background: oklch(0.985 0.004 240);
+  --foreground: oklch(0.2 0.02 250);
+
+  --surface: oklch(1 0 0);
+  --surface-elevated: oklch(0.995 0.003 240);
+  --surface-glass: oklch(1 0 0 / 0.75);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.02 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.02 250);
+
+  --primary: oklch(0.55 0.13 200);
+  --primary-foreground: oklch(0.99 0.005 240);
+
+  --secondary: oklch(0.95 0.005 240);
+  --secondary-foreground: oklch(0.25 0.02 250);
+
+  --muted: oklch(0.96 0.004 240);
+  --muted-foreground: oklch(0.46 0.015 250);
+
+  --accent: oklch(0.93 0.03 200);
+  --accent-foreground: oklch(0.25 0.04 220);
+
+  --destructive: oklch(0.58 0.2 25);
+  --success: oklch(0.5 0.15 160);
+  --warning: oklch(0.65 0.15 75);
+  --info: oklch(0.55 0.13 230);
+
+  --border: oklch(0.88 0.01 240 / 0.9);
+  --input: oklch(0.96 0.005 240);
+  --ring: oklch(0.55 0.13 200);
 }
 
 @layer base {
@@ -108,8 +137,8 @@
   }
   body {
     background:
-      radial-gradient(1200px 800px at 10% -10%, oklch(0.28 0.06 200 / 0.25), transparent 60%),
-      radial-gradient(900px 700px at 110% 0%, oklch(0.3 0.08 230 / 0.18), transparent 55%),
+      radial-gradient(1200px 800px at 10% -10%, color-mix(in oklab, var(--color-primary) 18%, transparent), transparent 60%),
+      radial-gradient(900px 700px at 110% 0%, color-mix(in oklab, var(--color-info) 14%, transparent), transparent 55%),
       var(--color-background);
     min-height: 100vh;
   }
@@ -117,10 +146,13 @@
 
 @layer components {
   .glass-panel {
-    background: linear-gradient(180deg, oklch(0.27 0.03 252 / 0.7), oklch(0.22 0.025 250 / 0.6));
-    border: 1px solid oklch(0.4 0.03 230 / 0.25);
+    background: linear-gradient(180deg,
+      color-mix(in oklab, var(--color-surface-elevated) 85%, transparent),
+      color-mix(in oklab, var(--color-surface) 80%, transparent));
+    border: 1px solid var(--color-border);
     backdrop-filter: blur(14px);
-    box-shadow: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 30px 60px -30px oklch(0 0 0 / 0.5);
+    box-shadow: 0 1px 0 color-mix(in oklab, white 6%, transparent) inset, 0 30px 60px -30px color-mix(in oklab, black 40%, transparent);
+    border-radius: var(--radius-lg);
   }
   .panel {
     background: var(--color-surface);
@@ -133,12 +165,12 @@
     border-radius: var(--radius-lg);
   }
   .accent-glow {
-    box-shadow: 0 0 0 1px oklch(0.78 0.13 195 / 0.35), 0 0 40px -8px oklch(0.78 0.13 195 / 0.4);
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-primary) 35%, transparent), 0 0 40px -8px color-mix(in oklab, var(--color-primary) 40%, transparent);
   }
   .grid-bg {
     background-image:
-      linear-gradient(oklch(0.4 0.03 230 / 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(0.4 0.03 230 / 0.08) 1px, transparent 1px);
+      linear-gradient(color-mix(in oklab, var(--color-foreground) 7%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in oklab, var(--color-foreground) 7%, transparent) 1px, transparent 1px);
     background-size: 32px 32px;
   }
   .text-mono {
@@ -147,7 +179,7 @@
   }
   .divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, oklch(0.5 0.03 230 / 0.4), transparent);
+    background: linear-gradient(90deg, transparent, var(--color-border), transparent);
   }
   .chip {
     display: inline-flex;
@@ -157,14 +189,25 @@
     border-radius: 9999px;
     font-size: 0.7rem;
     letter-spacing: 0.02em;
-    background: oklch(0.3 0.04 230 / 0.4);
-    border: 1px solid oklch(0.5 0.04 220 / 0.3);
-    color: oklch(0.92 0.02 220);
+    background: color-mix(in oklab, var(--color-secondary) 70%, transparent);
+    border: 1px solid var(--color-border);
+    color: var(--color-foreground);
+    white-space: nowrap;
   }
   .chip-accent {
-    background: oklch(0.78 0.13 195 / 0.12);
-    border-color: oklch(0.78 0.13 195 / 0.4);
-    color: oklch(0.85 0.1 195);
+    background: color-mix(in oklab, var(--color-primary) 14%, transparent);
+    border-color: color-mix(in oklab, var(--color-primary) 40%, transparent);
+    color: var(--color-primary);
+  }
+  .chip-warn {
+    background: color-mix(in oklab, var(--color-warning) 16%, transparent);
+    border-color: color-mix(in oklab, var(--color-warning) 40%, transparent);
+    color: var(--color-warning);
+  }
+  .chip-success {
+    background: color-mix(in oklab, var(--color-success) 16%, transparent);
+    border-color: color-mix(in oklab, var(--color-success) 40%, transparent);
+    color: var(--color-success);
   }
 }
 

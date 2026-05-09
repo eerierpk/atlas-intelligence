@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bookmark, GitCompare, Sparkles, Trash2 } from "lucide-react";
+import { Bookmark, GitCompare, Sparkles, Trash2, Share2, Mail, FileDown } from "lucide-react";
 import { AppShell } from "@/components/atlas/AppShell";
 import { useAtlas } from "@/lib/atlas/store";
 import { getDevice } from "@/lib/atlas/data";
+import { copyShareLink, openMailto, downloadHtmlReport } from "@/lib/atlas/share";
 
 export const Route = createFileRoute("/saved")({
   component: SavedPage,
@@ -11,11 +12,38 @@ export const Route = createFileRoute("/saved")({
 function SavedPage() {
   const { savedDevices, toggleSaved, savedComparisons, removeSavedComparison, aiSessions, removeSession } = useAtlas();
 
+  const shareState = {
+    title: "Atlas Workspace",
+    summary: `Workspace snapshot: ${savedDevices.length} saved · ${savedComparisons.length} comparisons · ${aiSessions.length} AI sessions.`,
+    deviceIds: savedDevices,
+  };
+
+  const onReport = () => {
+    const html = `<h1>MedIntel Atlas — Workspace Snapshot</h1>
+      <p class="muted">Generated ${new Date().toLocaleString()}</p>
+      <h2>Saved devices (${savedDevices.length})</h2>
+      <table><thead><tr><th>Modality</th><th>Vendor</th><th>Name</th><th>Tier</th><th>AI</th></tr></thead><tbody>
+        ${savedDevices.map(id => getDevice(id)).filter(Boolean).map(d => `<tr><td>${d!.modality}</td><td>${d!.vendor}</td><td>${d!.name}</td><td>${d!.budgetTier}</td><td>${d!.aiMaturity}/5</td></tr>`).join("")}
+      </tbody></table>
+      <h2>Saved comparisons (${savedComparisons.length})</h2>
+      <ul>${savedComparisons.map(c => `<li><strong>${c.title}</strong> — ${c.deviceIds.map(id => getDevice(id)?.name).join(", ")}</li>`).join("")}</ul>
+      <h2>AI sessions (${aiSessions.length})</h2>
+      <ul>${aiSessions.map(s => `<li>${s.title} (${s.messages.length} messages)</li>`).join("")}</ul>`;
+    downloadHtmlReport(shareState, html);
+  };
+
   return (
     <AppShell>
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Saved Workspace</h1>
-        <p className="text-sm text-muted-foreground mt-1">Session-only — your saved devices, comparisons and AI sessions.</p>
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Workspace</h1>
+          <p className="text-sm text-muted-foreground mt-1">Session-only — your saved devices, comparisons, AI threads, and exports.</p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={onReport} className="h-9 px-3 rounded-md border border-border text-sm flex items-center gap-1.5"><FileDown className="size-4" /> Generate report</button>
+          <button onClick={() => copyShareLink(shareState)} className="h-9 px-3 rounded-md border border-border text-sm flex items-center gap-1.5"><Share2 className="size-4" /> Share</button>
+          <button onClick={() => openMailto(shareState)} className="h-9 px-3 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm flex items-center gap-1.5"><Mail className="size-4" /> Email</button>
+        </div>
       </div>
 
       <div className="mt-5 grid lg:grid-cols-3 gap-4">

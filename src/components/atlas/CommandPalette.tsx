@@ -1,6 +1,7 @@
 import { Command } from "cmdk";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Sparkles, Compass, GitCompare, Bookmark, BarChart3, LayoutDashboard, Search } from "lucide-react";
+import { Sparkles, Boxes, GitCompare, Bookmark, BarChart3, LayoutDashboard, Search, Bot } from "lucide-react";
+import { AGENTS } from "@/lib/atlas/agents";
 import { DEVICES } from "@/lib/atlas/data";
 import { useEffect } from "react";
 
@@ -37,12 +38,13 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
 
             <Command.Group heading="Navigate" className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 py-1.5">
               {[
-                { to: "/dashboard", label: "Command Center", icon: LayoutDashboard },
-                { to: "/explore", label: "Explore Devices", icon: Compass },
-                { to: "/compare", label: "Comparison Workspace", icon: GitCompare },
+                { to: "/dashboard", label: "Command Centre", icon: LayoutDashboard },
+                { to: "/explore", label: "Devices", icon: Boxes },
+                { to: "/compare", label: "Comparison", icon: GitCompare },
                 { to: "/assistant", label: "AI Assistant", icon: Sparkles },
                 { to: "/insights", label: "Market Insights", icon: BarChart3 },
-                { to: "/saved", label: "Saved Workspace", icon: Bookmark },
+                { to: "/agents", label: "Agents", icon: Bot },
+                { to: "/saved", label: "Workspace", icon: Bookmark },
               ].map(n => (
                 <Command.Item key={n.to} value={n.label} onSelect={() => go(n.to)} className="flex items-center gap-2 px-2 py-2 rounded-md text-sm cursor-pointer aria-selected:bg-[var(--color-accent)]/40">
                   <n.icon className="size-4 text-[var(--color-primary)]" /> {n.label}
@@ -61,6 +63,21 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                   <span className="chip">{d.modality}</span>
                   <span className="font-medium">{d.name}</span>
                   <span className="text-muted-foreground text-xs ml-auto">{d.vendor}</span>
+                </Command.Item>
+              ))}
+            </Command.Group>
+
+            <Command.Group heading="Agents" className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 py-1.5 mt-2">
+              {AGENTS.map(a => (
+                <Command.Item
+                  key={a.id}
+                  value={`agent ${a.name} ${a.description}`}
+                  onSelect={() => { onOpenChange(false); navigate({ to: "/agents" }); }}
+                  className="flex items-center gap-2 px-2 py-2 rounded-md text-sm cursor-pointer aria-selected:bg-[var(--color-accent)]/40"
+                >
+                  <Bot className="size-4 text-[var(--color-primary)]" />
+                  <span className="font-medium">{a.name}</span>
+                  <span className="text-muted-foreground text-xs ml-auto truncate max-w-[200px]">{a.description}</span>
                 </Command.Item>
               ))}
             </Command.Group>
