@@ -1,6 +1,24 @@
-export type Modality = "MRI" | "CT";
-export type Vendor = "Siemens Healthineers" | "GE HealthCare" | "Philips" | "Canon Medical";
-export type ClinicalTag = "oncology" | "neuro" | "trauma" | "cardiac" | "pediatrics" | "musculoskeletal" | "abdominal" | "emergency";
+export type Modality = "MRI" | "CT" | "X-ray" | "Ultrasound" | "Mammography" | "PET/CT";
+export type Vendor =
+  | "Siemens Healthineers"
+  | "GE HealthCare"
+  | "Philips"
+  | "Canon Medical"
+  | "Hologic"
+  | "Fujifilm";
+export type ClinicalTag =
+  | "oncology"
+  | "neuro"
+  | "trauma"
+  | "cardiac"
+  | "pediatrics"
+  | "musculoskeletal"
+  | "abdominal"
+  | "emergency"
+  | "breast"
+  | "obstetrics"
+  | "vascular"
+  | "molecular";
 export type BudgetTier = "Entry" | "Mid" | "Premium" | "Flagship";
 export type Complexity = "Low" | "Moderate" | "High";
 
@@ -12,12 +30,12 @@ export interface Device {
   releaseYear: number;
   tagline: string;
   // technical
-  fieldStrengthT?: number; // MRI
-  boreCm?: number; // MRI
-  sliceCount?: number; // CT
-  detectorRows?: number; // CT
-  rotationTimeS?: number; // CT
-  gradientStrength?: number; // mT/m
+  fieldStrengthT?: number;
+  boreCm?: number;
+  sliceCount?: number;
+  detectorRows?: number;
+  rotationTimeS?: number;
+  gradientStrength?: number;
   // operational
   throughputPerDay: number;
   uptimePct: number;
@@ -27,7 +45,7 @@ export interface Device {
   powerKW: number;
   // financial
   budgetTier: BudgetTier;
-  estCostUSDm: number; // millions
+  estCostUSDm: number;
   roiYears: number;
   costPerScanUSD: number;
   // ai
@@ -38,7 +56,7 @@ export interface Device {
   // clinical
   clinicalTags: ClinicalTag[];
   // confidence
-  confidence: number; // 0-100
+  confidence: number;
   sources: string[];
 }
 
@@ -60,8 +78,20 @@ export interface AIMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
-  references?: string[]; // device ids
+  references?: string[];
   rationale?: string[];
   confidence?: number;
   createdAt: number;
+}
+
+export interface Agent {
+  id: string;
+  name: string;
+  description: string;
+  status: "idle" | "running" | "needs-review";
+  lastRun: string;
+  confidence: number;
+  dataSources: string[];
+  tasks: { id: string; title: string; state: "queued" | "running" | "done"; ts: string }[];
+  logs: { ts: string; level: "info" | "warn" | "ok"; msg: string }[];
 }
