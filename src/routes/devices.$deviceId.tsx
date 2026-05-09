@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Bookmark, ChevronLeft, GitCompare, Sparkles, ShieldCheck, Cpu, Zap, Activity } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { AppShell } from "@/components/atlas/AppShell";
 import { ConfidenceBadge } from "@/components/atlas/DeviceCard";
@@ -11,15 +11,21 @@ export const Route = createFileRoute("/devices/$deviceId")({
   component: DeviceDetail,
 });
 
-const TABS = ["Overview", "Technical", "AI Features", "Operational", "Financial", "Compatibility", "Clinical"] as const;
-type Tab = typeof TABS[number];
+const SECTION_NAV = [
+  { id: "overview", label: "Overview" },
+  { id: "clinical", label: "Clinical" },
+  { id: "operational", label: "Operational" },
+  { id: "financial", label: "Financial" },
+  { id: "ai-features", label: "AI Features" },
+  { id: "technical", label: "Technical" },
+  { id: "compatibility", label: "Compatibility" },
+] as const;
 
 function DeviceDetail() {
   const { deviceId } = Route.useParams();
   const device = getDevice(deviceId);
   const { savedDevices, toggleSaved, comparisonIds, toggleCompare, pushRecent } = useAtlas();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>("Overview");
 
   useEffect(() => { if (device) pushRecent(device.id); }, [device, pushRecent]);
 
@@ -79,32 +85,54 @@ function DeviceDetail() {
         </div>
       </motion.section>
 
-      {/* Vertical Tabs layout */}
-      <div className="mt-5 grid md:grid-cols-[200px_1fr] gap-5">
-        <div className="md:sticky md:top-20 self-start">
-          {/* Mobile: select fallback */}
-          <select value={tab} onChange={e => setTab(e.target.value as Tab)} className="md:hidden w-full h-9 px-3 rounded-md bg-[var(--color-input)] border border-border text-sm">
-            {TABS.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-          <nav className="hidden md:flex flex-col gap-0.5 panel-elevated p-1.5">
-            {TABS.map(t => (
-              <button key={t} onClick={() => setTab(t)} className={`text-left text-xs px-3 py-2 rounded-md transition border border-transparent ${tab === t ? "bg-[var(--color-accent)]/60 text-foreground border-primary/30 font-medium" : "text-muted-foreground hover:text-foreground hover:bg-[var(--color-secondary)]/50"}`}>{t}</button>
-            ))}
-          </nav>
-        </div>
+      {/* In-page jumps — all sections render below; scroll the page */}
+      <nav className="mt-4 flex gap-1.5 overflow-x-auto pb-1" aria-label="On this page">
+        {SECTION_NAV.map((s) => (
+          <a
+            key={s.id}
+            href={`#${s.id}`}
+            className="shrink-0 h-8 px-3 rounded-md border border-border text-[11px] font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-[var(--color-secondary)]/40 transition"
+          >
+            {s.label}
+          </a>
+        ))}
+      </nav>
 
-        <div className="min-w-0">
-        {tab === "Overview" && <OverviewTab device={device} />}
-        {tab === "Technical" && <KVList items={[
-          ["Modality", device.modality],
-          ["Vendor", device.vendor],
-          ["Release year", String(device.releaseYear)],
-          ...(device.modality === "MRI"
-            ? [["Field strength", `${device.fieldStrengthT}T`], ["Bore", `${device.boreCm} cm`], ["Gradient strength", `${device.gradientStrength} mT/m`]] as [string, string][]
-            : [["Slices", String(device.sliceCount)], ["Detector rows", String(device.detectorRows)], ["Rotation time", `${device.rotationTimeS} s`]] as [string, string][]),
-          ["Power draw", `${device.powerKW} kW`],
-        ]} />}
-        {tab === "AI Features" && (
+      <div className="mt-6 flex flex-col gap-8">
+        <DeviceSection id="overview" title="Overview">
+          <OverviewTab device={device} />
+        </DeviceSection>
+
+        <DeviceSection id="clinical" title="Clinical suitability">
+          <div className="panel-elevated p-5">
+            <div className="text-sm font-semibold">Clinical tags</div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {device.clinicalTags.map(t => <span key={t} className="chip">{t}</span>)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">Atlas tags reflect typical procurement positioning. Always validate against clinical workflow.</p>
+          </div>
+        </DeviceSection>
+
+        <DeviceSection id="operational" title="Operational metrics">
+          <KVList items={[
+            ["Throughput", `${device.throughputPerDay} exams/day`],
+            ["Uptime", `${device.uptimePct}%`],
+            ["Setup", `${device.setupWeeks} weeks`],
+            ["Operational complexity", device.complexity],
+            ["Maintenance burden", `${device.maintenanceBurden}/5`],
+          ]} />
+        </DeviceSection>
+
+        <DeviceSection id="financial" title="Financial metrics">
+          <KVList items={[
+            ["Estimated capital cost", `$${device.estCostUSDm.toFixed(2)}M`],
+            ["Cost per scan", `$${device.costPerScanUSD}`],
+            ["ROI window", `~${device.roiYears} yrs`],
+            ["Budget tier", device.budgetTier],
+          ]} />
+        </DeviceSection>
+
+        <DeviceSection id="ai-features" title="AI features">
           <div className="panel-elevated p-5">
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold">AI capabilities</div>
@@ -118,21 +146,21 @@ function DeviceDetail() {
               ))}
             </ul>
           </div>
-        )}
-        {tab === "Operational" && <KVList items={[
-          ["Throughput", `${device.throughputPerDay} exams/day`],
-          ["Uptime", `${device.uptimePct}%`],
-          ["Setup", `${device.setupWeeks} weeks`],
-          ["Operational complexity", device.complexity],
-          ["Maintenance burden", `${device.maintenanceBurden}/5`],
-        ]} />}
-        {tab === "Financial" && <KVList items={[
-          ["Estimated capital cost", `$${device.estCostUSDm.toFixed(2)}M`],
-          ["Cost per scan", `$${device.costPerScanUSD}`],
-          ["ROI window", `~${device.roiYears} yrs`],
-          ["Budget tier", device.budgetTier],
-        ]} />}
-        {tab === "Compatibility" && (
+        </DeviceSection>
+
+        <DeviceSection id="technical" title="Technical specs">
+          <KVList items={[
+            ["Modality", device.modality],
+            ["Vendor", device.vendor],
+            ["Release year", String(device.releaseYear)],
+            ...(device.modality === "MRI"
+              ? [["Field strength", `${device.fieldStrengthT}T`], ["Bore", `${device.boreCm} cm`], ["Gradient strength", `${device.gradientStrength} mT/m`]] as [string, string][]
+              : [["Slices", String(device.sliceCount)], ["Detector rows", String(device.detectorRows)], ["Rotation time", `${device.rotationTimeS} s`]] as [string, string][]),
+            ["Power draw", `${device.powerKW} kW`],
+          ]} />
+        </DeviceSection>
+
+        <DeviceSection id="compatibility" title="Compatibility">
           <div className="panel-elevated p-5">
             <div className="text-sm font-semibold">Standards &amp; integration</div>
             <div className="mt-3 flex flex-wrap gap-1.5">
@@ -143,19 +171,18 @@ function DeviceDetail() {
               Integration notes are planning-grade only. Verify with vendor before procurement decisions.
             </p>
           </div>
-        )}
-        {tab === "Clinical" && (
-          <div className="panel-elevated p-5">
-            <div className="text-sm font-semibold">Clinical suitability</div>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {device.clinicalTags.map(t => <span key={t} className="chip">{t}</span>)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-4">Atlas tags reflect typical procurement positioning. Always validate against clinical workflow.</p>
-          </div>
-        )}
-        </div>
+        </DeviceSection>
       </div>
     </AppShell>
+  );
+}
+
+function DeviceSection({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+  return (
+    <section id={id} className="scroll-mt-[calc(3.5rem+1rem)]">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border pb-2 mb-4">{title}</h2>
+      {children}
+    </section>
   );
 }
 

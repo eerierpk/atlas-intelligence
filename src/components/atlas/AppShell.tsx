@@ -66,7 +66,7 @@ export function AppShell({ children, right }: { children: ReactNode; right?: Rea
           </div>
           <div className="leading-tight hidden sm:block">
             <div className="text-sm font-semibold tracking-tight">MedIntel Atlas</div>
-            <div className="text-[10px] text-muted-foreground -mt-0.5 tracking-wider uppercase">Imaging Intelligence</div>
+            <div className="text-[10px] text-muted-foreground -mt-0.5 tracking-wider uppercase">Healthcare Infrastructure Intelligence</div>
           </div>
         </Link>
 
@@ -131,8 +131,22 @@ export function AppShell({ children, right }: { children: ReactNode; right?: Rea
       <div className="flex-1 flex">
         {/* Desktop sidebar */}
         <aside className={`${sidebarWidth} shrink-0 border-r border-border bg-[var(--color-surface)]/40 hidden md:flex flex-col transition-[width] duration-200`}>
+          <div className="p-2 sticky top-14 z-10 bg-[var(--color-surface)]/95 backdrop-blur border-b border-border">
+            <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between"} gap-2`}>
+              {!collapsed && <div className="text-[10px] uppercase tracking-wider text-muted-foreground px-2">Workspace</div>}
+              <button
+                onClick={() => setCollapsed(c => !c)}
+                className={`h-8 rounded-md border border-border text-xs text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 ${collapsed ? "w-8" : "px-2.5"}`}
+                title={collapsed ? "Expand navigation" : "Collapse navigation"}
+                aria-label={collapsed ? "Expand sidebar navigation" : "Collapse sidebar navigation"}
+                aria-pressed={collapsed}
+              >
+                {collapsed ? <ChevronsRight className="size-4" /> : <><ChevronsLeft className="size-4" /> Collapse</>}
+              </button>
+            </div>
+          </div>
+
           <nav className="p-2 flex flex-col gap-0.5">
-            {!collapsed && <div className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 py-2">Workspace</div>}
             {NAV.map(item => {
               const active = path === item.to || (item.to !== "/dashboard" && path.startsWith(item.to));
               return (
@@ -150,7 +164,7 @@ export function AppShell({ children, right }: { children: ReactNode; right?: Rea
               );
             })}
           </nav>
-          <div className="mt-auto p-2 flex flex-col gap-2">
+          <div className="mt-auto p-2 pt-3 flex flex-col gap-2 border-t border-border">
             {!collapsed && (
               <div className="glass-panel p-3">
                 <div className="flex items-center gap-2 text-xs font-semibold">
@@ -161,13 +175,6 @@ export function AppShell({ children, right }: { children: ReactNode; right?: Rea
                 </p>
               </div>
             )}
-            <button
-              onClick={() => setCollapsed(c => !c)}
-              className="h-8 rounded-md border border-border text-xs text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5"
-              title={collapsed ? "Expand" : "Collapse"}
-            >
-              {collapsed ? <ChevronsRight className="size-4" /> : <><ChevronsLeft className="size-4" /> Collapse</>}
-            </button>
           </div>
         </aside>
 

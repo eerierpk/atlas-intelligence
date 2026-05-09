@@ -4,20 +4,20 @@ export const AGENTS: Agent[] = [
   {
     id: "agent-vendor-intel",
     name: "Vendor Intel",
-    description: "Monitors vendor announcements, install-base shifts, and platform updates across MRI/CT/X-ray suppliers.",
+    description: "Monitors vendor announcements, install-base shifts, and platform updates across medical equipment and healthcare technology suppliers.",
     status: "running",
     lastRun: "12 min ago",
     confidence: 88,
     dataSources: ["Vendor newsroom feeds", "Public spec sheets", "Atlas internal benchmarks"],
     tasks: [
-      { id: "t1", title: "Index Siemens NAEOTOM Alpha PCD-CT updates", state: "done", ts: "12 min ago" },
-      { id: "t2", title: "Diff Philips MR 5300 firmware notes", state: "running", ts: "now" },
-      { id: "t3", title: "Crawl Canon Medical EU pricing signals", state: "queued", ts: "—" },
+      { id: "t1", title: "Index photon-counting CT platform updates (tier-1 OEMs)", state: "done", ts: "12 min ago" },
+      { id: "t2", title: "Diff high-field MR firmware notes across OEMs", state: "running", ts: "now" },
+      { id: "t3", title: "Crawl EU pricing & tender signals (multi-supplier)", state: "queued", ts: "—" },
     ],
     logs: [
       { ts: "12:42", level: "ok", msg: "Pulled 14 vendor signals (mock extraction)." },
       { ts: "12:43", level: "info", msg: "Tagged 3 entries as material change → propagated to Insights." },
-      { ts: "12:44", level: "warn", msg: "Confidence below 80% on Canon pricing leak — flagged for review." },
+      { ts: "12:44", level: "warn", msg: "Confidence below 80% on tier-1 OEM pricing leak — flagged for review." },
     ],
   },
   {

@@ -2,30 +2,29 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
   Activity, ArrowRight, Bookmark, Cpu, GitCompare, LineChart as LineChartIcon,
-  Search, Sparkles, TrendingUp, Zap, X as XIcon, Filter, Stethoscope,
+  Search, Sparkles, TrendingUp, Zap, Stethoscope,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/atlas/AppShell";
 import { ConfidenceBadge, DeviceCard } from "@/components/atlas/DeviceCard";
 import { DEVICES, VENDOR_FEED } from "@/lib/atlas/data";
 import { rankDevices } from "@/lib/atlas/ai";
 import { useAtlas } from "@/lib/atlas/store";
-import type { Modality, Vendor, BudgetTier } from "@/lib/atlas/types";
+import type { Modality, Vendor } from "@/lib/atlas/types";
 import { Area, AreaChart, Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
 });
 
-const MODALITIES: Modality[] = ["MRI", "CT", "X-ray", "Ultrasound", "Mammography", "PET/CT"];
-const VENDORS_LIST: Vendor[] = ["Siemens Healthineers", "GE HealthCare", "Philips", "Canon Medical", "Hologic", "Fujifilm"];
-const TIERS: BudgetTier[] = ["Entry", "Mid", "Premium", "Flagship"];
-
 const TREND = Array.from({ length: 12 }).map((_, i) => ({
   m: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][i],
   AI: 40 + Math.round(Math.sin(i / 2) * 8) + i * 4,
   Throughput: 60 + Math.round(Math.cos(i / 2) * 6) + i * 2,
 }));
+
+const MODALITY_OPTIONS: Modality[] = ["MRI", "CT", "X-ray", "Ultrasound", "Mammography", "PET/CT"];
+const VENDOR_OPTIONS: Vendor[] = ["Siemens Healthineers", "GE HealthCare", "Philips", "Canon Medical", "Hologic", "Fujifilm"];
 
 const MOD_COLORS: Record<Modality, string> = {
   "MRI": "var(--color-chart-1)",
@@ -45,14 +44,6 @@ function Dashboard() {
   const [mode, setMode] = useState<"search" | "ask">("ask");
   const [q, setQ] = useState("");
 
-  const [modalityF, setModalityF] = useState<Modality[]>([]);
-  const [vendorF, setVendorF] = useState<Vendor[]>([]);
-  const [tierF, setTierF] = useState<BudgetTier[]>([]);
-  const [aiMin, setAiMin] = useState(0);
-
-  const toggle = <T,>(arr: T[], v: T, set: (x: T[]) => void) =>
-    set(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
-
   // Keyboard shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -65,26 +56,19 @@ function Dashboard() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const filteredDevices = useMemo(() => DEVICES.filter(d =>
-    (!modalityF.length || modalityF.includes(d.modality)) &&
-    (!vendorF.length || vendorF.includes(d.vendor)) &&
-    (!tierF.length || tierF.includes(d.budgetTier)) &&
-    d.aiMaturity >= aiMin
-  ), [modalityF, vendorF, tierF, aiMin]);
-
   const oncologyMRI = rankDevices({ budget: 4, throughput: 5, ai: 8, clinical: ["oncology", "neuro"], modality: "MRI" }, 1)[0]?.device;
   const erCT = rankDevices({ budget: 4, throughput: 9, ai: 6, clinical: ["emergency", "trauma"], modality: "CT" }, 1)[0]?.device;
   const cheapCT = rankDevices({ budget: 9, throughput: 7, ai: 4, clinical: ["abdominal"], modality: "CT" }, 1)[0]?.device;
 
-  const modalityShare = MODALITIES.map(m => ({
+  const modalityShare = MODALITY_OPTIONS.map(m => ({
     name: m,
-    value: filteredDevices.filter(d => d.modality === m).length,
+    value: DEVICES.filter(d => d.modality === m).length,
     fill: MOD_COLORS[m],
   })).filter(x => x.value > 0);
 
-  const vendorBars = VENDORS_LIST.map(v => ({
+  const vendorBars = VENDOR_OPTIONS.map(v => ({
     name: v.split(" ")[0],
-    devices: filteredDevices.filter(d => d.vendor === v).length,
+    devices: DEVICES.filter(d => d.vendor === v).length,
   })).filter(x => x.devices > 0);
 
   const onSubmit = (e: React.FormEvent) => {
@@ -92,12 +76,6 @@ function Dashboard() {
     if (mode === "ask") navigate({ to: "/assistant", search: { q } as never });
     else navigate({ to: "/explore", search: { q } as never });
   };
-
-  const activeChips =
-    [...modalityF.map(v => ({ label: v, on: () => toggle(modalityF, v, setModalityF) })),
-     ...vendorF.map(v => ({ label: v, on: () => toggle(vendorF, v, setVendorF) })),
-     ...tierF.map(v => ({ label: v + " tier", on: () => toggle(tierF, v, setTierF) })),
-     ...(aiMin > 0 ? [{ label: `AI ≥ ${aiMin}/5`, on: () => setAiMin(0) }] : [])];
 
   return (
     <AppShell right={<RightRail />}>
@@ -109,7 +87,7 @@ function Dashboard() {
             <div>
               <div className="chip chip-accent w-fit"><Sparkles className="size-3" /> Atlas Intelligence Strip</div>
               <h1 className="mt-2 text-xl lg:text-2xl font-semibold tracking-tight">Welcome back, {user?.name.split(" ")[0]}.</h1>
-              <p className="text-sm text-muted-foreground mt-1">Atlas is monitoring {DEVICES.length} imaging systems across {VENDORS_LIST.length} vendors and {MODALITIES.length} modalities.</p>
+              <p className="text-sm text-muted-foreground mt-1">Industry-wide medical equipment intelligence — this workspace indexes {DEVICES.length} demo systems across {MODALITY_OPTIONS.length} equipment categories and a multi-OEM sample of the wider supplier landscape.</p>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
               <span className="size-1.5 rounded-full bg-[var(--color-success)] animate-pulse" />
@@ -155,38 +133,11 @@ function Dashboard() {
         </div>
       </motion.section>
 
-      {/* GLOBAL FILTER BAR */}
-      <section className="mt-5 panel-elevated p-3 sm:p-4">
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-1.5 text-xs font-semibold"><Filter className="size-3.5" /> Filters</div>
-
-          <FilterMenu label="Modality" items={MODALITIES} selected={modalityF} onToggle={(v) => toggle(modalityF, v, setModalityF)} />
-          <FilterMenu label="Vendor" items={VENDORS_LIST} selected={vendorF} onToggle={(v) => toggle(vendorF, v, setVendorF)} />
-          <FilterMenu label="Budget" items={TIERS} selected={tierF} onToggle={(v) => toggle(tierF, v, setTierF)} />
-
-          <div className="flex items-center gap-2 ml-auto">
-            <span className="text-[11px] text-muted-foreground">AI maturity ≥ {aiMin}</span>
-            <input type="range" min={0} max={5} value={aiMin} onChange={e => setAiMin(Number(e.target.value))} className="w-24 accent-[var(--color-primary)]" />
-          </div>
-        </div>
-
-        {activeChips.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5 items-center pt-2 border-t border-border">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Active</span>
-            {activeChips.map((c, i) => (
-              <button key={i} onClick={c.on} className="chip chip-accent hover:opacity-80">{c.label}<XIcon className="size-3" /></button>
-            ))}
-            <button onClick={() => { setModalityF([]); setVendorF([]); setTierF([]); setAiMin(0); }} className="text-[11px] text-muted-foreground hover:text-foreground ml-1">Clear all</button>
-            <span className="ml-auto text-[11px] text-muted-foreground">{filteredDevices.length} systems match</span>
-          </div>
-        )}
-      </section>
-
       {/* KPI strip */}
       <section className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KPI icon={<Cpu className="size-4" />} label="MRI / CT" value={`${filteredDevices.filter(d => d.modality === "MRI").length}·${filteredDevices.filter(d => d.modality === "CT").length}`} delta="indexed" />
-        <KPI icon={<Stethoscope className="size-4" />} label="X-ray / US" value={`${filteredDevices.filter(d => d.modality === "X-ray").length}·${filteredDevices.filter(d => d.modality === "Ultrasound").length}`} delta="indexed" />
-        <KPI icon={<Zap className="size-4" />} label="Mammo / PET-CT" value={`${filteredDevices.filter(d => d.modality === "Mammography").length}·${filteredDevices.filter(d => d.modality === "PET/CT").length}`} delta="indexed" />
+        <KPI icon={<Cpu className="size-4" />} label="MRI / CT" value={`${DEVICES.filter(d => d.modality === "MRI").length}·${DEVICES.filter(d => d.modality === "CT").length}`} delta="indexed" />
+        <KPI icon={<Stethoscope className="size-4" />} label="X-ray / US" value={`${DEVICES.filter(d => d.modality === "X-ray").length}·${DEVICES.filter(d => d.modality === "Ultrasound").length}`} delta="indexed" />
+        <KPI icon={<Zap className="size-4" />} label="Mammo / PET-CT" value={`${DEVICES.filter(d => d.modality === "Mammography").length}·${DEVICES.filter(d => d.modality === "PET/CT").length}`} delta="indexed" />
         <KPI icon={<TrendingUp className="size-4" />} label="Saved" value={savedDevices.length} delta="session" />
       </section>
 
@@ -207,7 +158,11 @@ function Dashboard() {
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12, color: "var(--color-foreground)" }} />
+                <Tooltip
+                  contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: "var(--color-popover-foreground)" }}
+                  itemStyle={{ color: "var(--color-popover-foreground)" }}
+                />
                 <Pie data={modalityShare} dataKey="value" nameKey="name" innerRadius={45} outerRadius={75} paddingAngle={2}>
                   {modalityShare.map((m, i) => <Cell key={i} fill={m.fill} />)}
                 </Pie>
@@ -238,7 +193,11 @@ function Dashboard() {
                 </defs>
                 <XAxis dataKey="m" stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12, color: "var(--color-foreground)" }} />
+                <Tooltip
+                  contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: "var(--color-popover-foreground)" }}
+                  itemStyle={{ color: "var(--color-popover-foreground)" }}
+                />
                 <Area type="monotone" dataKey="AI" stroke="var(--color-primary)" fill="url(#g1)" strokeWidth={2} />
                 <Area type="monotone" dataKey="Throughput" stroke="var(--color-info)" fill="url(#g2)" strokeWidth={2} />
               </AreaChart>
@@ -250,13 +209,17 @@ function Dashboard() {
       {/* Vendor breakdown + feed */}
       <section className="mt-6 grid lg:grid-cols-3 gap-4">
         <div className="panel-elevated p-4 lg:col-span-2">
-          <SectionHeader title="Vendor footprint" subtitle="Indexed devices per vendor (filtered)" small />
+          <SectionHeader title="OEM footprint" subtitle="Demo catalog · indexed devices per supplier (industry model)" small />
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={vendorBars} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
                 <XAxis dataKey="name" stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12, color: "var(--color-foreground)" }} />
+                <Tooltip
+                  contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: "var(--color-popover-foreground)" }}
+                  itemStyle={{ color: "var(--color-popover-foreground)" }}
+                />
                 <Bar dataKey="devices" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -275,30 +238,6 @@ function Dashboard() {
         </div>
       </section>
     </AppShell>
-  );
-}
-
-function FilterMenu<T extends string>({ label, items, selected, onToggle }: { label: string; items: T[]; selected: T[]; onToggle: (v: T) => void }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative">
-      <button onClick={() => setOpen(o => !o)} className={`h-8 px-3 rounded-md text-xs border flex items-center gap-1.5 ${selected.length ? "border-primary/50 text-[var(--color-primary)]" : "border-border text-muted-foreground hover:text-foreground"}`}>
-        {label}{selected.length > 0 && <span className="text-mono">· {selected.length}</span>}
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute z-40 mt-1 w-56 panel-elevated p-2 shadow-xl">
-            {items.map(it => (
-              <label key={it} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[var(--color-secondary)]/60 cursor-pointer text-sm">
-                <input type="checkbox" checked={selected.includes(it)} onChange={() => onToggle(it)} className="accent-[var(--color-primary)]" />
-                <span className="truncate">{it}</span>
-              </label>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
   );
 }
 
@@ -332,10 +271,10 @@ function SectionHeader({ title, subtitle, small, icon }: { title: string; subtit
 function RecCard({ title, device, reason }: { title: string; device?: ReturnType<typeof rankDevices>[number]["device"]; reason: string }) {
   if (!device) return null;
   return (
-    <Link to="/devices/$deviceId" params={{ deviceId: device.id }} className="panel-elevated p-4 hover:border-primary/40 transition group block">
+    <Link to="/devices/$deviceId" params={{ deviceId: device.id }} className="panel-elevated p-4 hover:border-primary/40 transition group block min-w-0">
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{title}</div>
-      <div className="mt-1 flex items-center justify-between gap-2">
-        <div className="text-sm font-semibold truncate">{device.name}</div>
+      <div className="mt-1 flex items-start justify-between gap-2 min-w-0">
+        <div className="min-w-0 flex-1 text-sm font-semibold truncate">{device.name}</div>
         <ConfidenceBadge value={device.confidence} />
       </div>
       <div className="text-[11px] text-muted-foreground mt-1">{device.vendor} · {device.modality}</div>
@@ -355,7 +294,7 @@ function RightRail() {
       <div className="glass-panel p-4">
         <div className="text-xs font-semibold flex items-center gap-1.5"><Sparkles className="size-3.5 text-[var(--color-primary)]" /> Atlas Co-pilot</div>
         <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-          Press <kbd className="text-mono px-1 rounded bg-[var(--color-secondary)] border border-border">/</kbd> to search and <kbd className="text-mono px-1 rounded bg-[var(--color-secondary)] border border-border">⇧A</kbd> to ask AI. Filters above propagate into Devices.
+          Press <kbd className="text-mono px-1 rounded bg-[var(--color-secondary)] border border-border">/</kbd> to search and <kbd className="text-mono px-1 rounded bg-[var(--color-secondary)] border border-border">⇧A</kbd> to ask AI. Refine further on Device Explorer with filters.
         </p>
       </div>
 

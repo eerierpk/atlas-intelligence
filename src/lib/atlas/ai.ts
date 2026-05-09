@@ -74,7 +74,7 @@ export function buildAssistantReply(prompt: string): AIMessage {
       id: crypto.randomUUID(),
       role: "assistant",
       createdAt: Date.now(),
-      content: "I couldn't match this query to any system in the catalog. Try referencing a clinical use case (oncology, neuro, cardiac, trauma) or a modality (MRI/CT).",
+      content: "I couldn't match this query to any system in the catalog. Try referencing a clinical use case (oncology, neuro, cardiac, trauma) or an equipment category (MRI, CT, ultrasound, X-ray, and similar).",
       confidence: 30,
       rationale: ["No matching scenario tags detected."],
     };
@@ -82,8 +82,8 @@ export function buildAssistantReply(prompt: string): AIMessage {
 
   const device = top.device;
   const otherIds = ranked.slice(1).map(r => r.device.id);
-  const clinicalText = w.clinical.length ? w.clinical.join(", ") : "general imaging";
-  const modalityText = w.modality ?? "either modality";
+  const clinicalText = w.clinical.length ? w.clinical.join(", ") : "multi-specialty hospital operations";
+  const modalityText = w.modality ?? "multiple equipment categories";
   const tradeoffs: string[] = [];
   if (device.budgetTier === "Flagship" || device.budgetTier === "Premium") tradeoffs.push(`Higher capital cost (~$${device.estCostUSDm.toFixed(1)}M) and ${device.setupWeeks}-week siting timeline.`);
   if (device.complexity === "High") tradeoffs.push("Requires advanced operator training and structured QA program.");
@@ -93,7 +93,7 @@ export function buildAssistantReply(prompt: string): AIMessage {
   const content = [
     `Recommendation: **${device.name}** by ${device.vendor}.`,
     ``,
-    `For a ${clinicalText} workflow on ${modalityText}, this system scores highest in the Atlas decision model. ${device.tagline}`,
+    `For ${clinicalText} workloads ${w.modality ? `with emphasis on ${w.modality}` : "across capital medical equipment in the catalog"}, this system scores highest in the Atlas decision model. ${device.tagline}`,
     ``,
     `Why it fits:`,
     `- AI maturity ${device.aiMaturity}/5 (${device.aiCapabilities.slice(0, 2).join(", ")})`,
@@ -113,7 +113,7 @@ export function buildAssistantReply(prompt: string): AIMessage {
     references: [device.id, ...otherIds],
     rationale: [
       `Scenario tags: ${clinicalText}`,
-      `Modality preference: ${modalityText}`,
+      `Equipment scope: ${modalityText}`,
       `Weighted by AI(${w.ai}), throughput(${w.throughput}), budget(${w.budget})`,
       ...tradeoffs.map(t => `Tradeoff: ${t}`),
     ],
@@ -123,7 +123,7 @@ export function buildAssistantReply(prompt: string): AIMessage {
 
 export const PROMPT_CHIPS = [
   "Best MRI for neuro + oncology with moderate budget",
-  "Compare Siemens vs GE CT for trauma workflow",
+  "Compare flagship CT platforms for trauma workflow",
   "Highest-throughput CT for a busy ER",
   "Cost-efficient 1.5T MRI for community hospital",
   "Top AI-mature flagship for cardiac CT",

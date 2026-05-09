@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Activity, ArrowRight, ShieldCheck, Sparkles, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AGENTS } from "@/lib/atlas/agents";
 import { useAtlas } from "@/lib/atlas/store";
 
 export const Route = createFileRoute("/login")({
@@ -45,25 +46,25 @@ function LoginPage() {
           </div>
           <div>
             <div className="font-semibold tracking-tight">MedIntel Atlas</div>
-            <div className="text-[11px] text-muted-foreground uppercase tracking-wider">Imaging Intelligence Portal</div>
+            <div className="text-[11px] text-muted-foreground uppercase tracking-wider">Healthcare Infrastructure Portal</div>
           </div>
         </div>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="relative max-w-lg">
           <div className="chip chip-accent mb-5"><Sparkles className="size-3" /> AI-Assisted Procurement Intelligence</div>
           <h1 className="text-4xl font-semibold tracking-tight leading-tight">
-            Decide on imaging systems with the <span className="text-[var(--color-primary)]">clarity of a trading desk</span>.
+            Decide on medical equipment and clinical infrastructure with the <span className="text-[var(--color-primary)]">clarity of a trading desk</span>.
           </h1>
           <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-            Atlas unifies MRI &amp; CT systems across Siemens Healthineers, GE HealthCare, Philips and Canon Medical into one decision-intelligence workspace —
+            Atlas unifies imaging platforms, diagnostics equipment and adjacent clinical infrastructure from across the global medical technology industry — OEMs, distributors and integrators — in one decision-intelligence workspace —
             with rationale, confidence and provenance behind every recommendation.
           </p>
 
           <div className="mt-8 grid grid-cols-3 gap-3">
             {[
-              { v: "16+", l: "Systems indexed" },
-              { v: "4", l: "Major vendors" },
-              { v: "12", l: "Decision dimensions" },
+              { v: "16+", l: "Systems indexed (demo)" },
+              { v: "Industry", l: "MedTech supplier landscape" },
+              { v: String(AGENTS.length), l: "Worker agents" },
             ].map(s => (
               <div key={s.l} className="glass-panel rounded-lg p-3 text-center">
                 <div className="text-2xl font-semibold text-mono text-[var(--color-primary)]">{s.v}</div>
@@ -90,7 +91,7 @@ function LoginPage() {
           </div>
 
           <h2 className="text-2xl font-semibold tracking-tight">Sign in</h2>
-          <p className="text-sm text-muted-foreground mt-1">Access your imaging intelligence workspace.</p>
+          <p className="text-sm text-muted-foreground mt-1">Access your healthcare infrastructure workspace.</p>
 
           <form onSubmit={submit} className="mt-6 flex flex-col gap-3">
             <Field label="Work email">

@@ -9,7 +9,7 @@ export const Route = createFileRoute("/insights")({
 
 function InsightsPage() {
   const vendorData = VENDORS.map(v => ({ name: v.name.split(" ")[0], momentum: v.momentum, devices: DEVICES.filter(d => d.vendor === v.name).length }));
-  const aiData = [1,2,3,4,5].map(level => ({ level: `${level}/5`, count: DEVICES.filter(d => d.aiMaturity === level).length }));
+  const aiData = [1, 2, 3, 4, 5].map(level => ({ level: `${level}/5`, count: DEVICES.filter(d => d.aiMaturity === level).length }));
   const tagDist: Record<string, number> = {};
   DEVICES.forEach(d => d.clinicalTags.forEach(t => { tagDist[t] = (tagDist[t] ?? 0) + 1; }));
   const tagData = Object.entries(tagDist).map(([name, value]) => ({ name, value }));
@@ -19,17 +19,17 @@ function InsightsPage() {
     <AppShell>
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Market Insights</h1>
-        <p className="text-sm text-muted-foreground mt-1">Cross-vendor signals, AI adoption and modality demand patterns.</p>
+        <p className="text-sm text-muted-foreground mt-1">Industry-wide signals across OEMs, AI adoption and equipment-portfolio demand patterns.</p>
       </div>
 
       <div className="mt-5 grid lg:grid-cols-2 gap-4">
-        <Card title="Vendor momentum" subtitle="Atlas composite score · 0–100">
+        <Card title="OEM momentum" subtitle="Industry benchmark · Atlas composite · 0–100">
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={vendorData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
               <XAxis dataKey="name" stroke="oklch(0.6 0.02 240)" fontSize={11} tickLine={false} axisLine={false} />
               <YAxis stroke="oklch(0.6 0.02 240)" fontSize={11} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={tip} />
-              <Bar dataKey="momentum" fill="oklch(0.78 0.13 195)" radius={[6,6,0,0]} />
+              <Tooltip {...chartTooltipProps} />
+              <Bar dataKey="momentum" fill="oklch(0.78 0.13 195)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -39,8 +39,8 @@ function InsightsPage() {
             <BarChart data={aiData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
               <XAxis dataKey="level" stroke="oklch(0.6 0.02 240)" fontSize={11} tickLine={false} axisLine={false} />
               <YAxis stroke="oklch(0.6 0.02 240)" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
-              <Tooltip contentStyle={tip} />
-              <Bar dataKey="count" fill="oklch(0.7 0.13 230)" radius={[6,6,0,0]} />
+              <Tooltip {...chartTooltipProps} />
+              <Bar dataKey="count" fill="oklch(0.7 0.13 230)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -48,7 +48,7 @@ function InsightsPage() {
         <Card title="Clinical demand distribution" subtitle="Device coverage by clinical tag">
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
-              <Tooltip contentStyle={tip} />
+              <Tooltip {...chartTooltipProps} />
               <Pie data={tagData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={2}>
                 {tagData.map((_, i) => <Cell key={i} fill={colors[i % colors.length]} />)}
               </Pie>
@@ -61,12 +61,12 @@ function InsightsPage() {
 
         <Card title="Operational efficiency" subtitle="Throughput vs cost-per-scan">
           <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={DEVICES.slice(0, 8).map(d => ({ name: d.name.split(" ").slice(0,2).join(" "), throughput: d.throughputPerDay, cost: d.costPerScanUSD }))} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+            <BarChart data={DEVICES.slice(0, 8).map(d => ({ name: d.name.split(" ").slice(0, 2).join(" "), throughput: d.throughputPerDay, cost: d.costPerScanUSD }))} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
               <XAxis dataKey="name" stroke="oklch(0.6 0.02 240)" fontSize={9} tickLine={false} axisLine={false} interval={0} angle={-15} dy={8} />
               <YAxis stroke="oklch(0.6 0.02 240)" fontSize={11} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={tip} />
-              <Bar dataKey="throughput" fill="oklch(0.72 0.15 160)" radius={[4,4,0,0]} />
-              <Bar dataKey="cost" fill="oklch(0.78 0.15 75)" radius={[4,4,0,0]} />
+              <Tooltip {...chartTooltipProps} />
+              <Bar dataKey="throughput" fill="oklch(0.72 0.15 160)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="cost" fill="oklch(0.78 0.15 75)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -87,7 +87,19 @@ function InsightsPage() {
   );
 }
 
-const tip = { background: "oklch(0.22 0.025 250)", border: "1px solid oklch(0.4 0.03 230 / 0.3)", borderRadius: 8, fontSize: 12 };
+/** Recharts tooltips need explicit label/item colors — dark bg + light text for readability */
+const CHART_TOOLTIP_FG = "oklch(0.94 0.015 240)";
+const chartTooltipProps = {
+  contentStyle: {
+    background: "oklch(0.22 0.025 250)",
+    border: "1px solid oklch(0.4 0.03 230 / 0.3)",
+    borderRadius: 8,
+    fontSize: 12,
+    color: CHART_TOOLTIP_FG,
+  },
+  labelStyle: { color: CHART_TOOLTIP_FG },
+  itemStyle: { color: CHART_TOOLTIP_FG },
+};
 
 function Card({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (

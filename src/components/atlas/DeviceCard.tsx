@@ -12,7 +12,7 @@ import { useAtlas } from "@/lib/atlas/store";
 export function ConfidenceBadge({ value }: { value: number }) {
   const label = value >= 90 ? "High" : value >= 75 ? "Medium" : "Low";
   return (
-    <span className="chip" title={`Confidence ${value}%`}>
+    <span className="chip shrink-0" title={`Confidence ${value}%`}>
       <span className="size-1.5 rounded-full bg-[var(--color-success)]" /> Confidence {label} · {value}%
     </span>
   );

@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Download, GitCompare, Sparkles, X } from "lucide-react";
 import { AppShell } from "@/components/atlas/AppShell";
-import { useAtlas } from "@/lib/atlas/store";
+import { MAX_COMPARE_DEVICES, useAtlas } from "@/lib/atlas/store";
 import { getDevice } from "@/lib/atlas/data";
 import { Bar, BarChart, PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
+import { downloadHtmlReport } from "@/lib/atlas/share";
 
 export const Route = createFileRoute("/compare")({
   component: ComparePage,
@@ -20,7 +21,7 @@ function ComparePage() {
         <div className="panel-elevated p-12 text-center">
           <GitCompare className="size-8 mx-auto text-[var(--color-primary)]" />
           <h2 className="mt-3 text-lg font-semibold">Comparison Workspace</h2>
-          <p className="text-sm text-muted-foreground mt-1">Add 2–4 devices from Explore to start a side-by-side comparison.</p>
+          <p className="text-sm text-muted-foreground mt-1">{`Add 2–${MAX_COMPARE_DEVICES} devices from Devices to start a side-by-side comparison.`}</p>
           <Link to="/explore" className="mt-4 inline-flex chip chip-accent">Browse devices →</Link>
         </div>
       </AppShell>
@@ -81,17 +82,26 @@ function ComparePage() {
     { scenario: "Best throughput", winner: [...devices].sort((a, b) => b.throughputPerDay - a.throughputPerDay)[0] },
     { scenario: "Lowest capex", winner: [...devices].sort((a, b) => a.estCostUSDm - b.estCostUSDm)[0] },
   ];
+  const onExport = () => {
+    const html = `<h1>MedIntel Atlas — Comparison Snapshot</h1>
+      <p class="muted">Generated ${new Date().toLocaleString()}</p>
+      <h2>Compared devices (${devices.length})</h2>
+      <table><thead><tr><th>Name</th><th>Vendor</th><th>Modality</th><th>AI</th><th>Throughput</th><th>Capex</th></tr></thead><tbody>
+      ${devices.map(d => `<tr><td>${d.name}</td><td>${d.vendor}</td><td>${d.modality}</td><td>${d.aiMaturity}/5</td><td>${d.throughputPerDay}/day</td><td>$${d.estCostUSDm.toFixed(2)}M</td></tr>`).join("")}
+      </tbody></table>`;
+    downloadHtmlReport({ title: `Comparison Snapshot ${devices.length} devices`, summary: "Comparison export", deviceIds: devices.map(d => d.id) }, html);
+  };
 
   return (
     <AppShell>
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Comparison Workspace</h1>
-          <p className="text-sm text-muted-foreground mt-1">{devices.length} device{devices.length > 1 ? "s" : ""} side-by-side · grouped by decision dimension.</p>
+          <p className="text-sm text-muted-foreground mt-1">{devices.length} device{devices.length > 1 ? "s" : ""} side-by-side · spec matrix, radar trade-offs, save snapshot, and HTML export.</p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => { saveComparison(`Comparison · ${devices.length} devices`); toast.success("Comparison saved to workspace"); }} className="h-9 px-3 rounded-md border border-border text-sm">Save snapshot</button>
-          <button onClick={() => toast.success("Presentation snapshot generated (mock)")} className="h-9 px-3 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm flex items-center gap-1.5"><Download className="size-4" /> Export</button>
+          <button onClick={onExport} className="h-9 px-3 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm flex items-center gap-1.5"><Download className="size-4" /> Export</button>
           <button onClick={clearCompare} className="h-9 px-3 rounded-md border border-border text-sm hover:border-destructive/40 hover:text-destructive">Clear</button>
         </div>
       </div>
@@ -101,7 +111,7 @@ function ComparePage() {
         <table className="w-full text-sm">
           <thead className="sticky top-0 bg-[var(--color-surface-elevated)] z-10">
             <tr>
-              <th className="text-left p-3 text-[11px] uppercase tracking-wider text-muted-foreground w-44">Dimension</th>
+              <th className="text-left p-3 text-[11px] uppercase tracking-wider text-muted-foreground w-44">Attribute</th>
               {devices.map(d => (
                 <th key={d.id} className="text-left p-3 min-w-[180px]">
                   <div className="flex items-start justify-between gap-2">

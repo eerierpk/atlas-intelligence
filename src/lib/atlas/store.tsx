@@ -22,6 +22,9 @@ interface AtlasState {
 
 const AtlasCtx = createContext<AtlasState | null>(null);
 
+/** Maximum devices in the Compare workspace (enforced in `toggleCompare`). */
+export const MAX_COMPARE_DEVICES = 4;
+
 export function AtlasProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AtlasState["user"]>(null);
   const [savedDevices, setSavedDevices] = useState<string[]>([]);
@@ -32,7 +35,7 @@ export function AtlasProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback((email: string) => {
     const name = email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || "Demo User";
-    setUser({ name, email, role: "Imaging Strategy Lead" });
+    setUser({ name, email, role: "Healthcare Infrastructure Strategy Lead" });
   }, []);
   const logout = useCallback(() => setUser(null), []);
 
@@ -43,7 +46,7 @@ export function AtlasProvider({ children }: { children: ReactNode }) {
   const toggleCompare = useCallback((id: string) => {
     setComparisonIds(prev => {
       if (prev.includes(id)) return prev.filter(x => x !== id);
-      if (prev.length >= 4) return prev;
+      if (prev.length >= MAX_COMPARE_DEVICES) return prev;
       return [...prev, id];
     });
   }, []);

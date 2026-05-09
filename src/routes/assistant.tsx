@@ -46,7 +46,7 @@ function AssistantPage() {
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2"><Sparkles className="size-5 text-[var(--color-primary)]" /> AI Assistant</h1>
-          <p className="text-sm text-muted-foreground mt-1">Conversational decision support across the imaging catalog.</p>
+          <p className="text-sm text-muted-foreground mt-1">Conversational decision support across the equipment catalog.</p>
         </div>
         <div className="chip"><ShieldCheck className="size-3" /> AI-generated guidance · not medical advice</div>
       </div>
