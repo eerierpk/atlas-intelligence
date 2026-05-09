@@ -10,6 +10,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { AtlasProvider } from "@/lib/atlas/store";
+import { ThemeProvider } from "@/lib/atlas/theme";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -96,10 +97,12 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <AtlasProvider>
-        <Outlet />
-        <Toaster />
-      </AtlasProvider>
+      <ThemeProvider>
+        <AtlasProvider>
+          <Outlet />
+          <Toaster />
+        </AtlasProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
