@@ -67,6 +67,21 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
               ))}
             </Command.Group>
 
+            <Command.Group heading="Agents" className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 py-1.5 mt-2">
+              {AGENTS.map(a => (
+                <Command.Item
+                  key={a.id}
+                  value={`agent ${a.name} ${a.description}`}
+                  onSelect={() => { onOpenChange(false); navigate({ to: "/agents" }); }}
+                  className="flex items-center gap-2 px-2 py-2 rounded-md text-sm cursor-pointer aria-selected:bg-[var(--color-accent)]/40"
+                >
+                  <Bot className="size-4 text-[var(--color-primary)]" />
+                  <span className="font-medium">{a.name}</span>
+                  <span className="text-muted-foreground text-xs ml-auto truncate max-w-[200px]">{a.description}</span>
+                </Command.Item>
+              ))}
+            </Command.Group>
+
             <Command.Group heading="Ask AI" className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 py-1.5 mt-2">
               {[
                 "Best MRI for neuro + oncology",
