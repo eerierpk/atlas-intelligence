@@ -10,8 +10,9 @@ export const Route = createFileRoute("/explore")({
   component: Explore,
 });
 
-const VENDOR_LIST: Vendor[] = ["Siemens Healthineers", "GE HealthCare", "Philips", "Canon Medical"];
+const VENDOR_LIST: Vendor[] = ["Siemens Healthineers", "GE HealthCare", "Philips", "Canon Medical", "Hologic", "Fujifilm"];
 const TIERS: BudgetTier[] = ["Entry", "Mid", "Premium", "Flagship"];
+const MODALITIES: (Modality | "ALL")[] = ["ALL", "MRI", "CT", "X-ray", "Ultrasound", "Mammography", "PET/CT"];
 
 function Explore() {
   const [q, setQ] = useState("");
@@ -64,9 +65,9 @@ function Explore() {
           </Group>
 
           <Group label="Modality">
-            <div className="flex gap-1.5">
-              {(["ALL", "MRI", "CT"] as const).map(m => (
-                <button key={m} onClick={() => setModality(m)} className={`flex-1 h-8 text-xs rounded-md border ${modality === m ? "border-primary text-[var(--color-primary)] bg-[var(--color-accent)]/40" : "border-border text-muted-foreground hover:text-foreground"}`}>{m}</button>
+            <div className="flex flex-wrap gap-1.5">
+              {MODALITIES.map(m => (
+                <button key={m} onClick={() => setModality(m as Modality | "ALL")} className={`h-8 px-2.5 text-[11px] rounded-md border ${modality === m ? "border-primary text-[var(--color-primary)] bg-[var(--color-accent)]/40" : "border-border text-muted-foreground hover:text-foreground"}`}>{m}</button>
               ))}
             </div>
           </Group>
