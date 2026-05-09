@@ -19,8 +19,6 @@ const MODALITY_OPTIONS: Modality[] = ["MRI", "CT", "X-ray", "Ultrasound", "Mammo
 const VENDOR_OPTIONS: Vendor[] = ["Siemens Healthineers", "GE HealthCare", "Philips", "Canon Medical", "Hologic", "Fujifilm"];
 const BUDGET_OPTIONS: BudgetTier[] = ["Entry", "Mid", "Premium", "Flagship"];
 
-const MODALITIES: (Modality | "ALL")[] = ["ALL", ...MODALITY_OPTIONS];
-
 interface DeviceFilters {
   modalities: Modality[];
   vendors: Vendor[];
@@ -48,7 +46,6 @@ function Explore() {
   const { q: searchQ } = Route.useSearch();
   const isMobile = useIsMobile();
   const [q, setQ] = useState(searchQ);
-  const [modality, setModality] = useState<Modality | "ALL">("ALL");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState<DeviceFilters>(EMPTY_FILTERS);
   const [draftFilters, setDraftFilters] = useState<DeviceFilters>(EMPTY_FILTERS);
@@ -59,28 +56,26 @@ function Explore() {
   const filtered = useMemo(() => {
     const scoped = applyDeviceFiltersLocal(DEVICES, appliedFilters);
     return scoped.filter(d => {
-      if (modality !== "ALL" && d.modality !== modality) return false;
       if (q) {
         const s = q.toLowerCase();
         if (!`${d.name} ${d.vendor} ${d.tagline} ${d.clinicalTags.join(" ")}`.toLowerCase().includes(s)) return false;
       }
       return true;
     });
-  }, [q, modality, appliedFilters]);
+  }, [q, appliedFilters]);
 
   const activeChips = [
     ...appliedFilters.modalities.map(v => ({ key: `m-${v}`, label: v, onClick: () => setAppliedFilters((prev) => ({ ...prev, modalities: prev.modalities.filter(x => x !== v) })) })),
     ...appliedFilters.vendors.map(v => ({ key: `v-${v}`, label: v, onClick: () => setAppliedFilters((prev) => ({ ...prev, vendors: prev.vendors.filter(x => x !== v) })) })),
     ...appliedFilters.budgetTiers.map(v => ({ key: `b-${v}`, label: `${v} tier`, onClick: () => setAppliedFilters((prev) => ({ ...prev, budgetTiers: prev.budgetTiers.filter(x => x !== v) })) })),
     ...(appliedFilters.minAiMaturity > 0 ? [{ key: "ai", label: `AI ≥ ${appliedFilters.minAiMaturity}/5`, onClick: () => setAppliedFilters((prev) => ({ ...prev, minAiMaturity: 0 })) }] : []),
-    ...(modality !== "ALL" ? [{ key: "scope", label: `Scope: ${modality}`, onClick: () => setModality("ALL") }] : []),
   ];
 
   useEffect(() => {
     setIsLoading(true);
     const t = window.setTimeout(() => setIsLoading(false), 220);
     return () => window.clearTimeout(t);
-  }, [q, modality, appliedFilters]);
+  }, [q, appliedFilters]);
 
   useEffect(() => {
     setQ(searchQ);
@@ -104,7 +99,6 @@ function Explore() {
 
   const resetAll = () => {
     setQ("");
-    setModality("ALL");
     setAppliedFilters(EMPTY_FILTERS);
   };
   const resetDraft = () => setDraftFilters(EMPTY_FILTERS);
@@ -197,11 +191,6 @@ function Explore() {
           <Search className="size-3.5 text-muted-foreground" />
           <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search by name, vendor, scenario, clinical focus..." className="flex-1 bg-transparent outline-none text-sm" />
           {q && <button onClick={() => setQ("")}><X className="size-3.5 text-muted-foreground" /></button>}
-        </div>
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {MODALITIES.map(m => (
-            <button key={m} onClick={() => setModality(m as Modality | "ALL")} className={`h-8 px-2.5 text-[11px] rounded-md border ${modality === m ? "border-primary text-[var(--color-primary)] bg-[var(--color-accent)]/40" : "border-border text-muted-foreground hover:text-foreground"}`}>{m}</button>
-          ))}
         </div>
         {activeChips.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5 items-center pt-2 border-t border-border">

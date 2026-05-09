@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bookmark, ChevronLeft, GitCompare, Sparkles, ShieldCheck, Cpu, Zap, Activity } from "lucide-react";
+import { Bookmark, ChevronLeft, GitCompare, Share2, Sparkles, ShieldCheck, Cpu, Zap, Activity } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { AppShell } from "@/components/atlas/AppShell";
 import { ConfidenceBadge } from "@/components/atlas/DeviceCard";
 import { getDevice } from "@/lib/atlas/data";
 import { useAtlas } from "@/lib/atlas/store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/devices/$deviceId")({
   component: DeviceDetail,
@@ -64,7 +65,14 @@ function DeviceDetail() {
             <h1 className="mt-1 text-2xl lg:text-3xl font-semibold tracking-tight">{device.name}</h1>
             <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{device.tagline}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => toast.message("Share", { description: "Preview control — not wired in this prototype." })}
+              className="h-9 px-3 rounded-md border border-border text-sm flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+            >
+              <Share2 className="size-4" /> Share
+            </button>
             <button onClick={() => toggleSaved(device.id)} className={`h-9 px-3 rounded-md border border-border text-sm flex items-center gap-1.5 ${saved ? "text-[var(--color-primary)] border-primary/40" : "text-muted-foreground hover:text-foreground"}`}>
               <Bookmark className={`size-4 ${saved ? "fill-current" : ""}`} /> {saved ? "Saved" : "Save"}
             </button>

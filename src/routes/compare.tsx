@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Download, GitCompare, Sparkles, X } from "lucide-react";
+import { Download, GitCompare, Share2, Sparkles, X } from "lucide-react";
 import { AppShell } from "@/components/atlas/AppShell";
 import { MAX_COMPARE_DEVICES, useAtlas } from "@/lib/atlas/store";
 import { getDevice } from "@/lib/atlas/data";
@@ -99,7 +99,14 @@ function ComparePage() {
           <h1 className="text-2xl font-semibold tracking-tight">Comparison Workspace</h1>
           <p className="text-sm text-muted-foreground mt-1">{devices.length} device{devices.length > 1 ? "s" : ""} side-by-side · spec matrix, radar trade-offs, save snapshot, and HTML export.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => toast.message("Share", { description: "Preview control — not wired in this prototype." })}
+            className="h-9 px-3 rounded-md border border-border text-sm flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+          >
+            <Share2 className="size-4" /> Share
+          </button>
           <button onClick={() => { saveComparison(`Comparison · ${devices.length} devices`); toast.success("Comparison saved to workspace"); }} className="h-9 px-3 rounded-md border border-border text-sm">Save snapshot</button>
           <button onClick={onExport} className="h-9 px-3 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm flex items-center gap-1.5"><Download className="size-4" /> Export</button>
           <button onClick={clearCompare} className="h-9 px-3 rounded-md border border-border text-sm hover:border-destructive/40 hover:text-destructive">Clear</button>

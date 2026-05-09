@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
-  Activity, ArrowRight, Bookmark, Cpu, GitCompare, LineChart as LineChartIcon,
-  Search, Sparkles, TrendingUp, Zap, Stethoscope,
+  Activity, ArrowRight, Bookmark, GitCompare, LineChart as LineChartIcon,
+  Search, Sparkles,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/atlas/AppShell";
@@ -36,7 +36,7 @@ const MOD_COLORS: Record<Modality, string> = {
 };
 
 function Dashboard() {
-  const { user, recentDeviceIds, savedDevices } = useAtlas();
+  const { user } = useAtlas();
   const navigate = useNavigate();
   const askRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -132,14 +132,6 @@ function Dashboard() {
           )}
         </div>
       </motion.section>
-
-      {/* KPI strip */}
-      <section className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KPI icon={<Cpu className="size-4" />} label="MRI / CT" value={`${DEVICES.filter(d => d.modality === "MRI").length}·${DEVICES.filter(d => d.modality === "CT").length}`} delta="indexed" />
-        <KPI icon={<Stethoscope className="size-4" />} label="X-ray / US" value={`${DEVICES.filter(d => d.modality === "X-ray").length}·${DEVICES.filter(d => d.modality === "Ultrasound").length}`} delta="indexed" />
-        <KPI icon={<Zap className="size-4" />} label="Mammo / PET-CT" value={`${DEVICES.filter(d => d.modality === "Mammography").length}·${DEVICES.filter(d => d.modality === "PET/CT").length}`} delta="indexed" />
-        <KPI icon={<TrendingUp className="size-4" />} label="Saved" value={savedDevices.length} delta="session" />
-      </section>
 
       {/* AI recommendations */}
       <section className="mt-6">
@@ -238,19 +230,6 @@ function Dashboard() {
         </div>
       </section>
     </AppShell>
-  );
-}
-
-function KPI({ icon, label, value, delta }: { icon: React.ReactNode; label: string; value: number | string; delta: string }) {
-  return (
-    <div className="panel-elevated p-3 flex items-center gap-3">
-      <div className="size-9 rounded-md bg-[var(--color-secondary)] grid place-items-center text-[var(--color-primary)]">{icon}</div>
-      <div>
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-        <div className="text-lg font-semibold text-mono">{value}</div>
-        <div className="text-[10px] text-muted-foreground">{delta}</div>
-      </div>
-    </div>
   );
 }
 
