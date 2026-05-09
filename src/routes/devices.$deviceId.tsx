@@ -153,6 +153,7 @@ function DeviceDetail() {
             <p className="text-xs text-muted-foreground mt-4">Atlas tags reflect typical procurement positioning. Always validate against clinical workflow.</p>
           </div>
         )}
+        </div>
       </div>
     </AppShell>
   );
