@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SavedRouteImport } from './routes/saved'
+import { Route as RoiRouteImport } from './routes/roi'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as ExploreRouteImport } from './routes/explore'
@@ -23,6 +24,11 @@ import { Route as DevicesDeviceIdRouteImport } from './routes/devices.$deviceId'
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
   path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoiRoute = RoiRouteImport.update({
+  id: '/roi',
+  path: '/roi',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/explore': typeof ExploreRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/roi': typeof RoiRoute
   '/saved': typeof SavedRoute
   '/devices/$deviceId': typeof DevicesDeviceIdRoute
 }
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/explore': typeof ExploreRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/roi': typeof RoiRoute
   '/saved': typeof SavedRoute
   '/devices/$deviceId': typeof DevicesDeviceIdRoute
 }
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/explore': typeof ExploreRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/roi': typeof RoiRoute
   '/saved': typeof SavedRoute
   '/devices/$deviceId': typeof DevicesDeviceIdRoute
 }
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/insights'
     | '/login'
+    | '/roi'
     | '/saved'
     | '/devices/$deviceId'
   fileRoutesByTo: FileRoutesByTo
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/insights'
     | '/login'
+    | '/roi'
     | '/saved'
     | '/devices/$deviceId'
   id:
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/insights'
     | '/login'
+    | '/roi'
     | '/saved'
     | '/devices/$deviceId'
   fileRoutesById: FileRoutesById
@@ -156,6 +168,7 @@ export interface RootRouteChildren {
   ExploreRoute: typeof ExploreRoute
   InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
+  RoiRoute: typeof RoiRoute
   SavedRoute: typeof SavedRoute
   DevicesDeviceIdRoute: typeof DevicesDeviceIdRoute
 }
@@ -167,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/saved'
       fullPath: '/saved'
       preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roi': {
+      id: '/roi'
+      path: '/roi'
+      fullPath: '/roi'
+      preLoaderRoute: typeof RoiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -244,6 +264,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExploreRoute: ExploreRoute,
   InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
+  RoiRoute: RoiRoute,
   SavedRoute: SavedRoute,
   DevicesDeviceIdRoute: DevicesDeviceIdRoute,
 }

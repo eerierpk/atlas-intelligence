@@ -1,12 +1,11 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
   Activity, ArrowRight, Bookmark, GitCompare, LineChart as LineChartIcon,
-  Search, Sparkles,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/atlas/AppShell";
-import { ConfidenceBadge, DeviceCard } from "@/components/atlas/DeviceCard";
+import { ConfidenceBadge } from "@/components/atlas/DeviceCard";
 import { DEVICES, VENDOR_FEED } from "@/lib/atlas/data";
 import { rankDevices } from "@/lib/atlas/ai";
 import { useAtlas } from "@/lib/atlas/store";
@@ -36,24 +35,12 @@ const MOD_COLORS: Record<Modality, string> = {
 };
 
 function Dashboard() {
-  const { user } = useAtlas();
-  const navigate = useNavigate();
-  const askRef = useRef<HTMLInputElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
+  const { user, recentDeviceIds, savedDevices, comparisonIds } = useAtlas();
+  const [now, setNow] = useState(() => new Date());
 
-  const [mode, setMode] = useState<"search" | "ask">("ask");
-  const [q, setQ] = useState("");
-
-  // Keyboard shortcuts
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const tgt = e.target as HTMLElement | null;
-      const inField = tgt && (tgt.tagName === "INPUT" || tgt.tagName === "TEXTAREA");
-      if (e.key === "/" && !inField) { e.preventDefault(); setMode("search"); setTimeout(() => searchRef.current?.focus(), 0); }
-      if (e.shiftKey && e.key.toLowerCase() === "a" && !inField) { e.preventDefault(); setMode("ask"); setTimeout(() => askRef.current?.focus(), 0); }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const id = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(id);
   }, []);
 
   const oncologyMRI = rankDevices({ budget: 4, throughput: 5, ai: 8, clinical: ["oncology", "neuro"], modality: "MRI" }, 1)[0]?.device;
@@ -71,65 +58,66 @@ function Dashboard() {
     devices: DEVICES.filter(d => d.vendor === v).length,
   })).filter(x => x.devices > 0);
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (mode === "ask") navigate({ to: "/assistant", search: { q } as never });
-    else navigate({ to: "/explore", search: { q } as never });
-  };
+  const recent = recentDeviceIds.map(id => DEVICES.find(d => d.id === id)).filter(Boolean);
+  const saved = savedDevices.map(id => DEVICES.find(d => d.id === id)).filter(Boolean);
 
   return (
-    <AppShell right={<RightRail />}>
-      {/* TOP AI INTELLIGENCE STRIP */}
+    <AppShell>
+      {/* Command strip: recently viewed, saved, live time */}
       <motion.section initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="relative">
         <div className="absolute inset-0 grid-bg opacity-30 rounded-2xl pointer-events-none" />
         <div className="relative glass-panel p-5 lg:p-6">
-          <div className="flex items-start justify-between flex-wrap gap-3">
-            <div>
-              <div className="chip chip-accent w-fit"><Sparkles className="size-3" /> Atlas Intelligence Strip</div>
-              <h1 className="mt-2 text-xl lg:text-2xl font-semibold tracking-tight">Welcome back, {user?.name.split(" ")[0]}.</h1>
-              <p className="text-sm text-muted-foreground mt-1">Industry-wide medical equipment intelligence — this workspace indexes {DEVICES.length} demo systems across {MODALITY_OPTIONS.length} equipment categories and a multi-OEM sample of the wider supplier landscape.</p>
-            </div>
-            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-              <span className="size-1.5 rounded-full bg-[var(--color-success)] animate-pulse" />
-              Live · {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+            <h1 className="text-xl font-semibold tracking-tight lg:text-2xl">
+              Welcome back, {user?.name.split(" ")[0]}.
+            </h1>
+            <div className="flex shrink-0 items-center gap-2 text-[11px] text-muted-foreground tabular-nums">
+              <span className="size-1.5 shrink-0 rounded-full bg-[var(--color-success)] animate-pulse" />
+              Live · {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </div>
           </div>
-
-          {/* Search vs Ask mode tabs */}
-          <div className="mt-4 inline-flex p-1 rounded-md border border-border bg-[var(--color-secondary)]/40">
-            <button onClick={() => setMode("search")} className={`px-3 h-8 rounded text-xs font-medium flex items-center gap-1.5 transition ${mode === "search" ? "bg-[var(--color-surface)] text-foreground border border-border" : "text-muted-foreground"}`}>
-              <Search className="size-3.5" /> Search <kbd className="text-mono text-[10px] ml-1 px-1 rounded bg-[var(--color-secondary)]">/</kbd>
-            </button>
-            <button onClick={() => setMode("ask")} className={`px-3 h-8 rounded text-xs font-medium flex items-center gap-1.5 transition ${mode === "ask" ? "bg-[var(--color-surface)] text-foreground border border-border" : "text-muted-foreground"}`}>
-              <Sparkles className="size-3.5" /> Ask AI <kbd className="text-mono text-[10px] ml-1 px-1 rounded bg-[var(--color-secondary)]">⇧A</kbd>
-            </button>
+          <div className="grid min-w-0 gap-4 md:grid-cols-2">
+            <div className="panel-elevated p-4">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="flex items-center gap-1.5"><Activity className="size-3.5 text-[var(--color-primary)]" /> Recently viewed</span>
+                {recent.length > 0 && <span className="chip">{recent.length}</span>}
+              </div>
+              {recent.length === 0 ? (
+                <div className="mt-2 text-[11px] text-muted-foreground">Open any device to see it here.</div>
+              ) : (
+                <ul className="mt-3 flex flex-col gap-1">
+                  {recent.slice(0, 8).map(d => d && (
+                    <li key={d.id}>
+                      <Link to="/devices/$deviceId" params={{ deviceId: d.id }} className="flex items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-[var(--color-secondary)]/60">
+                        <span className="chip">{d.modality}</span>
+                        <span className="flex-1 truncate">{d.name}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="panel-elevated p-4">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="flex items-center gap-1.5"><Bookmark className="size-3.5 text-[var(--color-primary)]" /> Saved</span>
+                {saved.length > 0 && <Link to="/saved" className="chip chip-accent">Workspace</Link>}
+              </div>
+              {saved.length === 0 ? (
+                <div className="mt-2 text-[11px] text-muted-foreground">Bookmark devices to find them here later.</div>
+              ) : (
+                <ul className="mt-3 flex flex-col gap-1">
+                  {saved.slice(0, 8).map(d => d && (
+                    <li key={d.id}>
+                      <Link to="/devices/$deviceId" params={{ deviceId: d.id }} className="flex items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-[var(--color-secondary)]/60">
+                        <span className="chip">{d.modality}</span>
+                        <span className="flex-1 truncate">{d.name}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
-
-          <form onSubmit={onSubmit} className="mt-2 flex items-center gap-2 h-12 px-3 rounded-lg bg-[var(--color-input)] border border-border focus-within:border-primary">
-            {mode === "search" ? <Search className="size-4 text-[var(--color-primary)]" /> : <Sparkles className="size-4 text-[var(--color-primary)]" />}
-            {mode === "search" ? (
-              <input ref={searchRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Search devices, vendors, capabilities, modalities…" className="flex-1 bg-transparent outline-none text-sm" />
-            ) : (
-              <input ref={askRef} value={q} onChange={e => setQ(e.target.value)} placeholder='Ask Atlas: "Best MRI for neuro + oncology with moderate budget…"' className="flex-1 bg-transparent outline-none text-sm" />
-            )}
-            <button className="h-9 px-4 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm font-medium flex items-center gap-1">
-              {mode === "ask" ? "Ask" : "Search"} <ArrowRight className="size-4" />
-            </button>
-          </form>
-
-          {mode === "ask" ? (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {["Best MRI for neuro + oncology", "High-throughput CT for ER", "Cost-efficient mammography", "Premium PET/CT for oncology"].map(p => (
-                <button key={p} onClick={() => navigate({ to: "/assistant", search: { q: p } as never })} className="chip hover:chip-accent">{p}</button>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {["Photon-counting CT", "1.5T MRI", "Tomosynthesis", "Helium-free", "AIR Recon DL"].map(p => (
-                <button key={p} onClick={() => { setQ(p); navigate({ to: "/explore", search: { q: p } as never }); }} className="chip hover:chip-accent">{p}</button>
-              ))}
-            </div>
-          )}
         </div>
       </motion.section>
 
@@ -142,6 +130,12 @@ function Dashboard() {
           <RecCard title="Cost-efficient CT pick" device={cheapCT} reason="Low TCO with healthy throughput." />
         </div>
       </section>
+      {comparisonIds.length > 0 && (
+        <Link to="/compare" className="mt-4 panel-elevated p-3 flex items-center justify-between hover:border-primary/40 transition">
+          <span className="text-xs font-semibold flex items-center gap-1.5"><GitCompare className="size-3.5 text-[var(--color-primary)]" /> {comparisonIds.length} in comparison</span>
+          <ArrowRight className="size-3.5 text-muted-foreground" />
+        </Link>
+      )}
 
       {/* Modality usage + Trend */}
       <section className="mt-6 grid lg:grid-cols-3 gap-4">
@@ -252,9 +246,9 @@ function RecCard({ title, device, reason }: { title: string; device?: ReturnType
   return (
     <Link to="/devices/$deviceId" params={{ deviceId: device.id }} className="panel-elevated p-4 hover:border-primary/40 transition group block min-w-0">
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{title}</div>
-      <div className="mt-1 flex items-start justify-between gap-2 min-w-0">
-        <div className="min-w-0 flex-1 text-sm font-semibold truncate">{device.name}</div>
-        <ConfidenceBadge value={device.confidence} />
+      <div className="mt-1 flex min-w-0 flex-col gap-1.5">
+        <div className="min-w-0 text-sm font-semibold leading-snug break-words">{device.name}</div>
+        <ConfidenceBadge value={device.confidence} className="self-start max-w-full" />
       </div>
       <div className="text-[11px] text-muted-foreground mt-1">{device.vendor} · {device.modality}</div>
       <div className="text-xs mt-2">{reason}</div>
@@ -263,68 +257,3 @@ function RecCard({ title, device, reason }: { title: string; device?: ReturnType
   );
 }
 
-function RightRail() {
-  const { recentDeviceIds, savedDevices, comparisonIds } = useAtlas();
-  const recent = recentDeviceIds.map(id => DEVICES.find(d => d.id === id)).filter(Boolean);
-  const saved = savedDevices.map(id => DEVICES.find(d => d.id === id)).filter(Boolean);
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="glass-panel p-4">
-        <div className="text-xs font-semibold flex items-center gap-1.5"><Sparkles className="size-3.5 text-[var(--color-primary)]" /> Atlas Co-pilot</div>
-        <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-          Press <kbd className="text-mono px-1 rounded bg-[var(--color-secondary)] border border-border">/</kbd> to search and <kbd className="text-mono px-1 rounded bg-[var(--color-secondary)] border border-border">⇧A</kbd> to ask AI. Refine further on Device Explorer with filters.
-        </p>
-      </div>
-
-      <div className="panel-elevated p-3">
-        <div className="text-xs font-semibold flex items-center justify-between">
-          <span className="flex items-center gap-1.5"><Activity className="size-3.5 text-[var(--color-primary)]" /> Recently viewed</span>
-          {recent.length > 0 && <span className="chip">{recent.length}</span>}
-        </div>
-        {recent.length === 0 ? (
-          <div className="text-[11px] text-muted-foreground mt-2">Open any device to see it here.</div>
-        ) : (
-          <ul className="mt-2 flex flex-col gap-1">
-            {recent.slice(0, 6).map(d => d && (
-              <li key={d.id}>
-                <Link to="/devices/$deviceId" params={{ deviceId: d.id }} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[var(--color-secondary)]/60 text-xs">
-                  <span className="chip">{d.modality}</span>
-                  <span className="truncate flex-1">{d.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      <div className="panel-elevated p-3">
-        <div className="text-xs font-semibold flex items-center justify-between">
-          <span className="flex items-center gap-1.5"><Bookmark className="size-3.5 text-[var(--color-primary)]" /> Saved</span>
-          {saved.length > 0 && <Link to="/saved" className="chip chip-accent">Open</Link>}
-        </div>
-        {saved.length === 0 ? (
-          <div className="text-[11px] text-muted-foreground mt-2">Bookmark devices to find them here later.</div>
-        ) : (
-          <ul className="mt-2 flex flex-col gap-1">
-            {saved.slice(0, 5).map(d => d && (
-              <li key={d.id}>
-                <Link to="/devices/$deviceId" params={{ deviceId: d.id }} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[var(--color-secondary)]/60 text-xs">
-                  <span className="chip">{d.modality}</span>
-                  <span className="truncate flex-1">{d.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {comparisonIds.length > 0 && (
-        <Link to="/compare" className="glass-panel p-3 flex items-center justify-between hover:border-primary/40">
-          <span className="text-xs font-semibold flex items-center gap-1.5"><GitCompare className="size-3.5 text-[var(--color-primary)]" /> {comparisonIds.length} in comparison</span>
-          <ArrowRight className="size-3.5" />
-        </Link>
-      )}
-    </div>
-  );
-}

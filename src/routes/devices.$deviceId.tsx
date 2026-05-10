@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bookmark, ChevronLeft, GitCompare, Share2, Sparkles, ShieldCheck, Cpu, Zap, Activity } from "lucide-react";
+import { Bookmark, Calculator, ChevronLeft, GitCompare, Share2, Sparkles, ShieldCheck, Cpu, Zap, Activity } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { AppShell } from "@/components/atlas/AppShell";
-import { ConfidenceBadge } from "@/components/atlas/DeviceCard";
 import { getDevice } from "@/lib/atlas/data";
+import { useAiPanelUi } from "@/lib/atlas/ai-panel-context";
 import { useAtlas } from "@/lib/atlas/store";
 import { toast } from "sonner";
 
@@ -25,6 +25,7 @@ const SECTION_NAV = [
 function DeviceDetail() {
   const { deviceId } = Route.useParams();
   const device = getDevice(deviceId);
+  const { queueAndOpen } = useAiPanelUi();
   const { savedDevices, toggleSaved, comparisonIds, toggleCompare, pushRecent } = useAtlas();
   const navigate = useNavigate();
 
@@ -35,7 +36,7 @@ function DeviceDetail() {
       <AppShell>
         <div className="panel-elevated p-10 text-center">
           <p className="text-sm">Device not found.</p>
-          <Link to="/explore" className="mt-4 inline-flex chip chip-accent">Back to Explore</Link>
+          <Link to="/explore" search={{ q: "" }} className="mt-4 inline-flex chip chip-accent">Back to Explore</Link>
         </div>
       </AppShell>
     );
@@ -46,8 +47,8 @@ function DeviceDetail() {
   const Icon = device.modality === "MRI" ? Cpu : Zap;
 
   return (
-    <AppShell right={<AIPanel deviceId={device.id} />}>
-      <button onClick={() => navigate({ to: "/explore" })} className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mb-3"><ChevronLeft className="size-3.5" /> Explore</button>
+    <AppShell>
+      <button type="button" onClick={() => navigate({ to: "/explore", search: { q: "" } })} className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mb-3"><ChevronLeft className="size-3.5" /> Explore</button>
 
       {/* Hero */}
       <motion.section initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="glass-panel rounded-2xl p-6 lg:p-7">
@@ -79,9 +80,20 @@ function DeviceDetail() {
             <button onClick={() => toggleCompare(device.id)} className={`h-9 px-3 rounded-md border border-border text-sm flex items-center gap-1.5 ${inCompare ? "text-[var(--color-primary)] border-primary/40" : "text-muted-foreground hover:text-foreground"}`}>
               <GitCompare className="size-4" /> {inCompare ? "In Compare" : "Compare"}
             </button>
-            <Link to="/assistant" className="h-9 px-3 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm flex items-center gap-1.5">
-              <Sparkles className="size-4" /> Ask AI
+            <Link
+              to="/roi"
+              search={{ device: device.id }}
+              className="h-9 px-3 rounded-md border border-border text-sm flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+            >
+              <Calculator className="size-4" /> ROI
             </Link>
+            <button
+              type="button"
+              onClick={() => queueAndOpen(`Summarize ${device.name} (${device.vendor}) for procurement — key tradeoffs and fit`)}
+              className="h-9 px-3 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm flex items-center gap-1.5"
+            >
+              <Sparkles className="size-4" /> Ask AI
+            </button>
           </div>
         </div>
 
@@ -253,52 +265,3 @@ function Mini({ label, value }: { label: string; value: string }) {
   );
 }
 
-function AIPanel({ deviceId }: { deviceId: string }) {
-  const device = getDevice(deviceId)!;
-  const strengths = [
-    `AI maturity ${device.aiMaturity}/5 with ${device.aiCapabilities.length} flagship capabilities`,
-    `Throughput ${device.throughputPerDay}/day at ${device.uptimePct}% uptime`,
-    `Strong fit for ${device.clinicalTags.slice(0, 3).join(", ")}`,
-  ];
-  const tradeoffs: string[] = [];
-  if (device.budgetTier === "Flagship" || device.budgetTier === "Premium") tradeoffs.push(`Higher capex (~$${device.estCostUSDm.toFixed(1)}M)`);
-  if (device.complexity === "High") tradeoffs.push("Requires advanced operator training");
-  if (device.maintenanceBurden >= 4) tradeoffs.push("Above-average maintenance burden");
-  if (!tradeoffs.length) tradeoffs.push("Balanced platform — minimal structural tradeoffs");
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="glass-panel rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div className="text-xs font-semibold flex items-center gap-1.5"><Sparkles className="size-3.5 text-[var(--color-primary)]" /> AI Summary</div>
-          <ConfidenceBadge value={device.confidence} />
-        </div>
-        <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
-          {device.name} is positioned in the {device.budgetTier.toLowerCase()} tier with strong alignment to {device.clinicalTags.slice(0, 2).join(" and ")} workflows. Atlas confidence is anchored on vendor specs and benchmark patterns.
-        </p>
-      </div>
-
-      <div className="panel-elevated p-4">
-        <div className="text-xs font-semibold mb-2">Strengths</div>
-        <ul className="flex flex-col gap-1.5 text-[11px] text-muted-foreground">
-          {strengths.map(s => <li key={s} className="flex gap-2"><span className="text-[var(--color-success)]">+</span>{s}</li>)}
-        </ul>
-      </div>
-
-      <div className="panel-elevated p-4">
-        <div className="text-xs font-semibold mb-2">Tradeoffs</div>
-        <ul className="flex flex-col gap-1.5 text-[11px] text-muted-foreground">
-          {tradeoffs.map(s => <li key={s} className="flex gap-2"><span className="text-[var(--color-warning)]">!</span>{s}</li>)}
-        </ul>
-      </div>
-
-      <div className="panel-elevated p-4">
-        <div className="text-xs font-semibold mb-2">Provenance</div>
-        <div className="flex flex-wrap gap-1">
-          {device.sources.map(s => <span key={s} className="chip">{s}</span>)}
-        </div>
-        <p className="text-[10px] text-muted-foreground mt-3 leading-relaxed">AI-generated guidance, not medical advice.</p>
-      </div>
-    </div>
-  );
-}

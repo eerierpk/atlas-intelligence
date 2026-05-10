@@ -1,12 +1,14 @@
 import { Command } from "cmdk";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { Sparkles, Boxes, GitCompare, Bookmark, BarChart3, LayoutDashboard, Search, Bot } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { Sparkles, Boxes, GitCompare, Bookmark, BarChart3, LayoutDashboard, Search, Bot, Calculator } from "lucide-react";
 import { AGENTS } from "@/lib/atlas/agents";
+import { useAiPanelUi } from "@/lib/atlas/ai-panel-context";
 import { DEVICES } from "@/lib/atlas/data";
 import { useEffect } from "react";
 
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const navigate = useNavigate();
+  const { queueAndOpen, open: openAiPanel } = useAiPanelUi();
 
   useEffect(() => {
     if (!open) return;
@@ -17,7 +19,12 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
 
   if (!open) return null;
 
-  const go = (to: string) => { onOpenChange(false); navigate({ to }); };
+  const go = (to: string) => {
+    onOpenChange(false);
+    if (to === "/explore") navigate({ to: "/explore", search: { q: "" } });
+    else if (to === "/roi") navigate({ to: "/roi", search: { device: "" } });
+    else navigate({ to });
+  };
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-start pt-[12vh]" onClick={() => onOpenChange(false)}>
@@ -28,8 +35,8 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
             <Search className="size-4 text-muted-foreground" />
             <Command.Input
               autoFocus
-              placeholder="Search devices, navigate, ask AI…"
-              className="flex-1 h-12 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+              placeholder="Search devices, agents, scenarios…"
+              className="flex-1 h-12 min-w-0 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
             />
             <kbd className="text-[10px] text-mono px-1.5 py-0.5 rounded bg-[var(--color-secondary)] border border-border">ESC</kbd>
           </div>
@@ -41,8 +48,8 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                 { to: "/dashboard", label: "Command Centre", icon: LayoutDashboard },
                 { to: "/explore", label: "Devices", icon: Boxes },
                 { to: "/compare", label: "Comparison", icon: GitCompare },
-                { to: "/assistant", label: "AI Assistant", icon: Sparkles },
                 { to: "/insights", label: "Market Insights", icon: BarChart3 },
+                { to: "/roi", label: "ROI calculator", icon: Calculator },
                 { to: "/agents", label: "Agents", icon: Bot },
                 { to: "/saved", label: "Workspace", icon: Bookmark },
               ].map(n => (
@@ -50,6 +57,13 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                   <n.icon className="size-4 text-[var(--color-primary)]" /> {n.label}
                 </Command.Item>
               ))}
+              <Command.Item
+                value="Ask AI panel assistant chat"
+                onSelect={() => { onOpenChange(false); openAiPanel(); }}
+                className="flex items-center gap-2 px-2 py-2 rounded-md text-sm cursor-pointer aria-selected:bg-[var(--color-accent)]/40"
+              >
+                <Sparkles className="size-4 text-[var(--color-primary)]" /> Ask AI
+              </Command.Item>
             </Command.Group>
 
             <Command.Group heading="Devices" className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 py-1.5 mt-2">
@@ -88,15 +102,17 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                 "High throughput CT for ER",
                 "Cost-efficient 1.5T MRI",
               ].map(q => (
-                <Command.Item key={q} value={q} onSelect={() => go("/assistant")} className="flex items-center gap-2 px-2 py-2 rounded-md text-sm cursor-pointer aria-selected:bg-[var(--color-accent)]/40">
+                <Command.Item key={q} value={q} onSelect={() => { onOpenChange(false); queueAndOpen(q); }} className="flex items-center gap-2 px-2 py-2 rounded-md text-sm cursor-pointer aria-selected:bg-[var(--color-accent)]/40">
                   <Sparkles className="size-4 text-[var(--color-primary)]" /> {q}
                 </Command.Item>
               ))}
             </Command.Group>
           </Command.List>
-          <div className="px-3 py-2 text-[10px] text-muted-foreground border-t border-border flex items-center justify-between">
-            <span>MedIntel Atlas · Command Palette</span>
-            <Link to="/assistant" onClick={() => onOpenChange(false)} className="hover:text-foreground">Open AI Assistant →</Link>
+          <div className="flex flex-col gap-1.5 border-t border-border px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+            <span className="text-[10px] text-muted-foreground">Esc close · ⇧A Ask AI · / opens this from anywhere</span>
+            <button type="button" onClick={() => { onOpenChange(false); openAiPanel(); }} className="shrink-0 text-left text-[10px] text-muted-foreground hover:text-foreground">
+              Open Ask AI →
+            </button>
           </div>
         </Command>
       </div>

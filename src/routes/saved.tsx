@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bookmark, GitCompare, Sparkles, Trash2, Share2, Mail, FileDown } from "lucide-react";
 import { AppShell } from "@/components/atlas/AppShell";
+import { useAiPanelUi } from "@/lib/atlas/ai-panel-context";
 import { useAtlas } from "@/lib/atlas/store";
 import { getDevice } from "@/lib/atlas/data";
 import { copyShareLink, openMailto, downloadHtmlReport } from "@/lib/atlas/share";
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/saved")({
 });
 
 function SavedPage() {
+  const { open: openAiPanel } = useAiPanelUi();
   const { savedDevices, toggleSaved, savedComparisons, removeSavedComparison, aiSessions, removeSession } = useAtlas();
 
   const shareState = {
@@ -91,7 +93,7 @@ function SavedPage() {
                     <button onClick={() => removeSession(s.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="size-3.5" /></button>
                   </div>
                   <div className="text-[11px] text-muted-foreground mt-1">{s.messages.length} messages</div>
-                  <Link to="/assistant" className="mt-2 inline-flex chip chip-accent">Open Assistant →</Link>
+                  <button type="button" onClick={() => openAiPanel()} className="mt-2 inline-flex chip chip-accent">Open Ask AI →</button>
                 </li>
               ))}
             </ul>

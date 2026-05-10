@@ -74,6 +74,16 @@ export interface AISession {
   messages: AIMessage[];
 }
 
+/** Structured procurement-style review shown in the AI panel (e.g. from a device detail page). */
+export interface DeviceReviewSnapshot {
+  deviceId: string;
+  summary: string;
+  strengths: string[];
+  tradeoffs: string[];
+  sources: string[];
+  confidence: number;
+}
+
 export interface AIMessage {
   id: string;
   role: "user" | "assistant";
@@ -81,6 +91,8 @@ export interface AIMessage {
   references?: string[];
   rationale?: string[];
   confidence?: number;
+  /** When set, the assistant bubble renders this as staged “live” review cards. */
+  deviceReview?: DeviceReviewSnapshot;
   createdAt: number;
 }
 

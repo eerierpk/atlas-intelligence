@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { AiPanelProvider } from "@/lib/atlas/ai-panel-context";
 import { AtlasProvider } from "@/lib/atlas/store";
 import { ThemeProvider } from "@/lib/atlas/theme";
 import { Toaster } from "@/components/ui/sonner";
@@ -99,8 +100,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AtlasProvider>
-          <Outlet />
-          <Toaster />
+          <AiPanelProvider>
+            <Outlet />
+            <Toaster />
+          </AiPanelProvider>
         </AtlasProvider>
       </ThemeProvider>
     </QueryClientProvider>

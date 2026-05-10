@@ -1,5 +1,5 @@
 import { DEVICES, getDevice } from "./data";
-import type { AIMessage, ClinicalTag, Device, Modality } from "./types";
+import type { AIMessage, ClinicalTag, Device, DeviceReviewSnapshot, Modality } from "./types";
 
 export interface ScenarioWeights {
   budget: number; // higher = more budget-conscious
@@ -130,4 +130,47 @@ export const PROMPT_CHIPS = [
   "Pediatric-friendly MRI options",
 ];
 
-export function deviceById(id: string) { return getDevice(id); }
+export function deviceById(id: string) {
+  return getDevice(id);
+}
+
+export function buildDeviceReviewSnapshot(device: Device): DeviceReviewSnapshot {
+  const strengths = [
+    `AI maturity ${device.aiMaturity}/5 with ${device.aiCapabilities.length} flagship capabilities`,
+    `Throughput ${device.throughputPerDay}/day at ${device.uptimePct}% uptime`,
+    `Strong fit for ${device.clinicalTags.slice(0, 3).join(", ")}`,
+  ];
+  const tradeoffs: string[] = [];
+  if (device.budgetTier === "Flagship" || device.budgetTier === "Premium") {
+    tradeoffs.push(`Higher capex (~$${device.estCostUSDm.toFixed(1)}M)`);
+  }
+  if (device.complexity === "High") tradeoffs.push("Requires advanced operator training");
+  if (device.maintenanceBurden >= 4) tradeoffs.push("Above-average maintenance burden");
+  if (!tradeoffs.length) tradeoffs.push("Balanced platform — minimal structural tradeoffs");
+  const summary = `${device.name} is positioned in the ${device.budgetTier.toLowerCase()} tier with strong alignment to ${device.clinicalTags.slice(0, 2).join(" and ")} workflows. Atlas confidence is anchored on vendor specs and benchmark patterns.`;
+  return {
+    deviceId: device.id,
+    summary,
+    strengths,
+    tradeoffs,
+    sources: device.sources,
+    confidence: device.confidence,
+  };
+}
+
+/** Assistant turn that mirrors the former device-page review rail. */
+export function buildDeviceReviewMessage(deviceId: string): AIMessage | null {
+  const device = getDevice(deviceId);
+  if (!device) return null;
+  const deviceReview = buildDeviceReviewSnapshot(device);
+  return {
+    id: crypto.randomUUID(),
+    role: "assistant",
+    createdAt: Date.now(),
+    content:
+      "Here’s a structured procurement review for this system, synthesized from catalog signals and benchmark patterns.",
+    references: [device.id],
+    confidence: device.confidence,
+    deviceReview,
+  };
+}

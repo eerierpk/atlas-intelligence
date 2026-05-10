@@ -22,7 +22,7 @@ function ComparePage() {
           <GitCompare className="size-8 mx-auto text-[var(--color-primary)]" />
           <h2 className="mt-3 text-lg font-semibold">Comparison Workspace</h2>
           <p className="text-sm text-muted-foreground mt-1">{`Add 2–${MAX_COMPARE_DEVICES} devices from Devices to start a side-by-side comparison.`}</p>
-          <Link to="/explore" className="mt-4 inline-flex chip chip-accent">Browse devices →</Link>
+          <Link to="/explore" search={{ q: "" }} className="mt-4 inline-flex chip chip-accent">Browse devices →</Link>
         </div>
       </AppShell>
     );

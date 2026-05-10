@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Filter, Grid3x3, LayoutList, Search, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, Filter, Grid3x3, LayoutList, Search, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/atlas/AppShell";
 import { DeviceCard } from "@/components/atlas/DeviceCard";
@@ -7,6 +7,7 @@ import { DEVICES } from "@/lib/atlas/data";
 import type { BudgetTier, Modality, Vendor } from "@/lib/atlas/types";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/explore")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -15,8 +16,10 @@ export const Route = createFileRoute("/explore")({
   component: Explore,
 });
 
-const MODALITY_OPTIONS: Modality[] = ["MRI", "CT", "X-ray", "Ultrasound", "Mammography", "PET/CT"];
-const VENDOR_OPTIONS: Vendor[] = ["Siemens Healthineers", "GE HealthCare", "Philips", "Canon Medical", "Hologic", "Fujifilm"];
+/** Distinct modalities present in the catalog. */
+const MODALITIES_IN_CATALOG: Modality[] = Array.from(new Set(DEVICES.map((d) => d.modality))).sort((a, b) => a.localeCompare(b));
+/** Distinct vendors present in the catalog (scales when new OEMs are added to data). */
+const VENDORS_IN_CATALOG: Vendor[] = Array.from(new Set(DEVICES.map((d) => d.vendor))).sort((a, b) => a.localeCompare(b));
 const BUDGET_OPTIONS: BudgetTier[] = ["Entry", "Mid", "Premium", "Flagship"];
 
 interface DeviceFilters {
@@ -246,6 +249,121 @@ function Explore() {
   );
 }
 
+function FilterMultiCombobox<T extends string>({
+  options,
+  selected,
+  onChange,
+  allLabel,
+  countNoun,
+  searchPlaceholder,
+  emptyMessage,
+  idPrefix,
+}: {
+  options: readonly T[];
+  selected: T[];
+  onChange: (next: T[]) => void;
+  allLabel: string;
+  countNoun: string;
+  searchPlaceholder: string;
+  emptyMessage: string;
+  idPrefix: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) setQuery("");
+  }, [open]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [...options];
+    return options.filter((v) => v.toLowerCase().includes(q));
+  }, [query, options]);
+
+  const toggle = (v: T) => {
+    onChange(selected.includes(v) ? selected.filter((x) => x !== v) : [...selected, v]);
+  };
+
+  const summary =
+    selected.length === 0 ? allLabel : selected.length === 1 ? selected[0] : `${selected.length} ${countNoun}`;
+
+  const optionsId = `${idPrefix}-options`;
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        id={`${idPrefix}-trigger`}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-9 w-full items-center gap-2 rounded-md border border-border bg-[var(--color-input)] px-2.5 text-left text-xs outline-none hover:border-primary/40 focus-visible:border-primary"
+      >
+        <span className="min-w-0 flex-1 truncate text-foreground">{summary}</span>
+        <ChevronDown className={cn("size-3.5 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div
+          className="absolute left-0 right-0 top-full z-40 mt-1 overflow-hidden rounded-md border border-border bg-[var(--color-popover)] shadow-lg"
+          role="listbox"
+          aria-multiselectable="true"
+        >
+          <div className="flex items-center gap-1.5 border-b border-border bg-[var(--color-input)] px-2 py-1.5">
+            <Search className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
+              placeholder={searchPlaceholder}
+              className="min-w-0 flex-1 bg-transparent py-1 text-xs outline-none [appearance:textfield] placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:appearance-none"
+              autoComplete="off"
+              aria-controls={optionsId}
+            />
+          </div>
+          <div id={optionsId} className="max-h-48 overflow-y-auto p-1">
+            {filtered.length === 0 ? (
+              <div className="px-2 py-3 text-center text-[11px] text-muted-foreground">{emptyMessage}</div>
+            ) : (
+              filtered.map((v) => {
+                const checked = selected.includes(v);
+                return (
+                  <label
+                    key={v}
+                    role="option"
+                    aria-selected={checked}
+                    className="flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-[var(--color-accent)]/40"
+                    onMouseDown={(e) => e.preventDefault()}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggle(v)}
+                      className="mt-0.5 accent-[var(--color-primary)]"
+                    />
+                    <span className="min-w-0 leading-snug">{v}</span>
+                  </label>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FiltersBody({
   filters,
   setFilters,
@@ -258,14 +376,16 @@ function FiltersBody({
     <div className="panel-elevated p-4">
       <div className="flex items-center gap-2 text-xs font-semibold mb-3"><Filter className="size-3.5" /> Catalog filters</div>
       <Group label="Vendor">
-        <div className="flex flex-col gap-1.5">
-          {VENDOR_OPTIONS.map(v => (
-            <label key={v} className="flex items-center gap-2 text-xs cursor-pointer">
-              <input type="checkbox" checked={filters.vendors.includes(v)} onChange={() => setFilters({ ...filters, vendors: toggleArr(filters.vendors, v) })} className="accent-[var(--color-primary)]" />
-              {v}
-            </label>
-          ))}
-        </div>
+        <FilterMultiCombobox
+          options={VENDORS_IN_CATALOG}
+          selected={filters.vendors}
+          onChange={(vendors) => setFilters({ ...filters, vendors })}
+          allLabel="All vendors"
+          countNoun="vendors"
+          searchPlaceholder="Search vendors…"
+          emptyMessage="No matching vendors."
+          idPrefix="explore-vendor"
+        />
       </Group>
 
       <Group label="Budget tier">
@@ -277,11 +397,16 @@ function FiltersBody({
       </Group>
 
       <Group label="Modalities">
-        <div className="flex flex-wrap gap-1.5">
-          {MODALITY_OPTIONS.map(m => (
-            <button key={m} type="button" onClick={() => setFilters({ ...filters, modalities: toggleArr(filters.modalities, m) })} className={`chip ${filters.modalities.includes(m) ? "chip-accent" : ""}`}>{m}</button>
-          ))}
-        </div>
+        <FilterMultiCombobox
+          options={MODALITIES_IN_CATALOG}
+          selected={filters.modalities}
+          onChange={(modalities) => setFilters({ ...filters, modalities })}
+          allLabel="All modalities"
+          countNoun="modalities"
+          searchPlaceholder="Search modalities…"
+          emptyMessage="No matching modalities."
+          idPrefix="explore-modality"
+        />
       </Group>
 
       <Group label={`Min AI maturity · ${filters.minAiMaturity}/5`}>
