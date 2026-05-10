@@ -20,6 +20,7 @@ import { Route as CompareRouteImport } from './routes/compare'
 import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JourneyIndexRouteImport } from './routes/journey.index'
 import { Route as JourneyDeviceIdRouteImport } from './routes/journey.$deviceId'
 import { Route as DevicesDeviceIdRouteImport } from './routes/devices.$deviceId'
 
@@ -78,6 +79,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JourneyIndexRoute = JourneyIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => JourneyRoute,
+} as any)
 const JourneyDeviceIdRoute = JourneyDeviceIdRouteImport.update({
   id: '/$deviceId',
   path: '/$deviceId',
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/saved': typeof SavedRoute
   '/devices/$deviceId': typeof DevicesDeviceIdRoute
   '/journey/$deviceId': typeof JourneyDeviceIdRoute
+  '/journey/': typeof JourneyIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -112,12 +119,12 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
   '/insights': typeof InsightsRoute
-  '/journey': typeof JourneyRouteWithChildren
   '/login': typeof LoginRoute
   '/roi': typeof RoiRoute
   '/saved': typeof SavedRoute
   '/devices/$deviceId': typeof DevicesDeviceIdRoute
   '/journey/$deviceId': typeof JourneyDeviceIdRoute
+  '/journey': typeof JourneyIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +141,7 @@ export interface FileRoutesById {
   '/saved': typeof SavedRoute
   '/devices/$deviceId': typeof DevicesDeviceIdRoute
   '/journey/$deviceId': typeof JourneyDeviceIdRoute
+  '/journey/': typeof JourneyIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +159,7 @@ export interface FileRouteTypes {
     | '/saved'
     | '/devices/$deviceId'
     | '/journey/$deviceId'
+    | '/journey/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -160,12 +169,12 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/explore'
     | '/insights'
-    | '/journey'
     | '/login'
     | '/roi'
     | '/saved'
     | '/devices/$deviceId'
     | '/journey/$deviceId'
+    | '/journey'
   id:
     | '__root__'
     | '/'
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/saved'
     | '/devices/$deviceId'
     | '/journey/$deviceId'
+    | '/journey/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -277,6 +287,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/journey/': {
+      id: '/journey/'
+      path: '/'
+      fullPath: '/journey/'
+      preLoaderRoute: typeof JourneyIndexRouteImport
+      parentRoute: typeof JourneyRoute
+    }
     '/journey/$deviceId': {
       id: '/journey/$deviceId'
       path: '/$deviceId'
@@ -296,10 +313,12 @@ declare module '@tanstack/react-router' {
 
 interface JourneyRouteChildren {
   JourneyDeviceIdRoute: typeof JourneyDeviceIdRoute
+  JourneyIndexRoute: typeof JourneyIndexRoute
 }
 
 const JourneyRouteChildren: JourneyRouteChildren = {
   JourneyDeviceIdRoute: JourneyDeviceIdRoute,
+  JourneyIndexRoute: JourneyIndexRoute,
 }
 
 const JourneyRouteWithChildren =
@@ -322,3 +341,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
