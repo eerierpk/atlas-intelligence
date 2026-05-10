@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  Activity, BarChart3, Bookmark, Boxes, Bot, Calculator, GitCompare, LayoutDashboard,
+  Activity, BarChart3, Bookmark, Boxes, Bot, Calculator, GitCompare, GraduationCap, LayoutDashboard,
   LogOut, Menu, Moon, Search, Sparkles, Sun, X, ChevronsLeft, ChevronsRight,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -16,6 +16,7 @@ export const NAV = [
   { to: "/compare", label: "Comparison", icon: GitCompare },
   { to: "/insights", label: "Market Insights", icon: BarChart3 },
   { to: "/roi", label: "ROI calculator", icon: Calculator },
+  { to: "/journey", label: "Machine Journey", icon: GraduationCap },
   { to: "/agents", label: "Agents", icon: Bot },
   { to: "/saved", label: "Workspace", icon: Bookmark },
 ] as const;
