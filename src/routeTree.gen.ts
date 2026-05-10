@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as RoiRouteImport } from './routes/roi'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -34,6 +35,11 @@ const RoiRoute = RoiRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JourneyRoute = JourneyRouteImport.update({
+  id: '/journey',
+  path: '/journey',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InsightsRoute = InsightsRouteImport.update({
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
   '/insights': typeof InsightsRoute
+  '/journey': typeof JourneyRoute
   '/login': typeof LoginRoute
   '/roi': typeof RoiRoute
   '/saved': typeof SavedRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
   '/insights': typeof InsightsRoute
+  '/journey': typeof JourneyRoute
   '/login': typeof LoginRoute
   '/roi': typeof RoiRoute
   '/saved': typeof SavedRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/explore': typeof ExploreRoute
   '/insights': typeof InsightsRoute
+  '/journey': typeof JourneyRoute
   '/login': typeof LoginRoute
   '/roi': typeof RoiRoute
   '/saved': typeof SavedRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/explore'
     | '/insights'
+    | '/journey'
     | '/login'
     | '/roi'
     | '/saved'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/explore'
     | '/insights'
+    | '/journey'
     | '/login'
     | '/roi'
     | '/saved'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/explore'
     | '/insights'
+    | '/journey'
     | '/login'
     | '/roi'
     | '/saved'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   ExploreRoute: typeof ExploreRoute
   InsightsRoute: typeof InsightsRoute
+  JourneyRoute: typeof JourneyRoute
   LoginRoute: typeof LoginRoute
   RoiRoute: typeof RoiRoute
   SavedRoute: typeof SavedRoute
@@ -194,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journey': {
+      id: '/journey'
+      path: '/journey'
+      fullPath: '/journey'
+      preLoaderRoute: typeof JourneyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/insights': {
@@ -263,6 +283,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   ExploreRoute: ExploreRoute,
   InsightsRoute: InsightsRoute,
+  JourneyRoute: JourneyRoute,
   LoginRoute: LoginRoute,
   RoiRoute: RoiRoute,
   SavedRoute: SavedRoute,
@@ -271,3 +292,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
