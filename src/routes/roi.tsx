@@ -187,13 +187,13 @@ function RoiCalculatorPage() {
     if (d) setInputs(defaultsFromDevice(d));
   }, [deviceId]);
 
-  const device = getDevice(deviceId);
-  const anchors = useMemo(() => machineAnchorsFromDevice(device), [device]);
-  const bounds = useMemo(() => scenarioBoundsFromDevice(device), [device]);
+  const device = getDevice(deviceId) ?? DEVICES[0];
+  const anchors = useMemo(() => machineAnchorsFromDevice(device!), [device]);
+  const bounds = useMemo(() => scenarioBoundsFromDevice(device!), [device]);
   const results = useMemo(() => computeRoi(inputs, anchors.ratedExamsPerDay), [inputs, anchors.ratedExamsPerDay]);
 
   const setField = <K extends keyof RoiScenarioInputs>(key: K, value: RoiScenarioInputs[K]) => {
-    setInputs((prev) => applyDeviceScenarioRules({ ...prev, [key]: value }, device));
+    setInputs((prev) => applyDeviceScenarioRules({ ...prev, [key]: value }, device!));
   };
 
   if (!device) {
