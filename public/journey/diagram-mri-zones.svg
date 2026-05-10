@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420" font-family="ui-sans-serif, system-ui, sans-serif" role="img" aria-label="MR safety zones I to IV with 5 gauss line">
+  <rect width="600" height="420" fill="#0b1220"/>
+  <g>
+    <rect x="20" y="20" width="560" height="380" rx="14" fill="#0f172a" stroke="#1f2a44"/>
+    <text x="40" y="48" font-size="12" font-weight="700" fill="#e2e8f0">MR safety zones (conceptual)</text>
+
+    <rect x="40" y="70" width="520" height="310" rx="10" fill="#111c33" stroke="#22304d"/>
+    <text x="50" y="92" font-size="11" fill="#94a3b8">Zone I — public area</text>
+
+    <rect x="80" y="110" width="440" height="250" rx="10" fill="#0f223e" stroke="#234060"/>
+    <text x="92" y="132" font-size="11" fill="#7dd3fc">Zone II — greeting & screening</text>
+
+    <rect x="140" y="160" width="320" height="180" rx="10" fill="#102a4d" stroke="#2a4f7a"/>
+    <text x="152" y="182" font-size="11" fill="#fbbf24">Zone III — restricted (5-gauss line contained)</text>
+
+    <rect x="210" y="210" width="180" height="110" rx="10" fill="#1a3a66" stroke="#3b82f6"/>
+    <text x="300" y="240" font-size="11" font-weight="700" fill="#e0f2fe" text-anchor="middle">Zone IV — scanner room</text>
+    <circle cx="300" cy="275" r="22" fill="#3b82f6" opacity="0.8"/>
+    <text x="300" y="280" font-size="10" font-weight="700" fill="#0b1220" text-anchor="middle">MR</text>
+
+    <text x="40" y="395" font-size="10" fill="#64748b">Educational orientation only. MR safety policy is owned by the MR Medical Director and MR Safety Expert.</text>
+  </g>
+</svg>
