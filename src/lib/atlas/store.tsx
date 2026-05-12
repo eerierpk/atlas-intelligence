@@ -1,9 +1,25 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import type { AISession, SavedComparison } from "./types";
 
+export type UserRole = "Student" | "Healthcare Professional" | "Healthcare Expert" | "Business / Stakeholder";
+
+export interface AtlasUser {
+  name: string;
+  email: string;
+  /** Display title (free text). */
+  role: string;
+  /** Structured role enum used for RBAC simulation. */
+  userRole: UserRole;
+  gender?: string;
+  yearsExperience?: number;
+  specialization?: string;
+  credentials?: string;
+}
+
 interface AtlasState {
-  user: { name: string; email: string; role: string } | null;
+  user: AtlasUser | null;
   login: (email: string) => void;
+  signup: (data: Omit<AtlasUser, "role"> & { role?: string }) => void;
   logout: () => void;
   savedDevices: string[];
   toggleSaved: (id: string) => void;
