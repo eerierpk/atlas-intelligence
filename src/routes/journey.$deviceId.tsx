@@ -221,6 +221,10 @@ function JourneyOverview() {
             </div>
           </div>
         </TabsContent>
+
+        <TabsContent value="scenarios" className="space-y-4">
+          <ScenarioBreakdown modality={device.modality} />
+        </TabsContent>
       </Tabs>
 
       <JourneyDisclaimer />
