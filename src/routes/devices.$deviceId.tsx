@@ -3,6 +3,8 @@ import { Bookmark, Calculator, ChevronLeft, GitCompare, Share2, Sparkles, Shield
 import { useEffect, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { AppShell } from "@/components/atlas/AppShell";
+import { ReviewsSection } from "@/components/devices/ReviewsSection";
+import { HospitalsSection } from "@/components/devices/HospitalsSection";
 import { getDevice } from "@/lib/atlas/data";
 import { useAiPanelUi } from "@/lib/atlas/ai-panel-context";
 import { useAtlas } from "@/lib/atlas/store";
@@ -20,6 +22,8 @@ const SECTION_NAV = [
   { id: "ai-features", label: "AI Features" },
   { id: "technical", label: "Technical" },
   { id: "compatibility", label: "Compatibility" },
+  { id: "reviews", label: "Reviews" },
+  { id: "hospitals", label: "Hospitals" },
 ] as const;
 
 function DeviceDetail() {
@@ -192,7 +196,19 @@ function DeviceDetail() {
             </p>
           </div>
         </DeviceSection>
+
+        <DeviceSection id="reviews" title="Reviews (demo)">
+          <ReviewsSection deviceId={device.id} />
+        </DeviceSection>
+
+        <DeviceSection id="hospitals" title="Hospital placements (demo)">
+          <HospitalsSection deviceId={device.id} modality={device.modality} />
+        </DeviceSection>
       </div>
+
+      <p className="text-[11px] text-muted-foreground mt-6">
+        Educational / procurement planning prototype. Not for clinical use. Not FDA-cleared as a medical device. Illustrative data only unless explicitly sourced.
+      </p>
     </AppShell>
   );
 }

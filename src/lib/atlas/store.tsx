@@ -1,9 +1,25 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import type { AISession, SavedComparison } from "./types";
 
+export type UserRole = "Student" | "Healthcare Professional" | "Healthcare Expert" | "Business / Stakeholder";
+
+export interface AtlasUser {
+  name: string;
+  email: string;
+  /** Display title (free text). */
+  role: string;
+  /** Structured role enum used for RBAC simulation. */
+  userRole: UserRole;
+  gender?: string;
+  yearsExperience?: number;
+  specialization?: string;
+  credentials?: string;
+}
+
 interface AtlasState {
-  user: { name: string; email: string; role: string } | null;
+  user: AtlasUser | null;
   login: (email: string) => void;
+  signup: (data: Omit<AtlasUser, "role"> & { role?: string }) => void;
   logout: () => void;
   savedDevices: string[];
   toggleSaved: (id: string) => void;
@@ -35,7 +51,17 @@ export function AtlasProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback((email: string) => {
     const name = email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || "Demo User";
-    setUser({ name, email, role: "Healthcare Infrastructure Strategy Lead" });
+    setUser({
+      name, email,
+      role: "Healthcare Infrastructure Strategy Lead",
+      userRole: "Healthcare Professional",
+    });
+  }, []);
+  const signup = useCallback((data: Omit<AtlasUser, "role"> & { role?: string }) => {
+    setUser({
+      ...data,
+      role: data.role ?? data.userRole,
+    });
   }, []);
   const logout = useCallback(() => setUser(null), []);
 
@@ -74,13 +100,13 @@ export function AtlasProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AtlasState>(() => ({
-    user, login, logout,
+    user, login, signup, logout,
     savedDevices, toggleSaved,
     comparisonIds, toggleCompare, clearCompare,
     savedComparisons, saveComparison, removeSavedComparison,
     aiSessions, upsertSession, removeSession,
     recentDeviceIds, pushRecent,
-  }), [user, savedDevices, comparisonIds, savedComparisons, aiSessions, recentDeviceIds, login, logout, toggleSaved, toggleCompare, clearCompare, saveComparison, removeSavedComparison, upsertSession, removeSession, pushRecent]);
+  }), [user, savedDevices, comparisonIds, savedComparisons, aiSessions, recentDeviceIds, login, signup, logout, toggleSaved, toggleCompare, clearCompare, saveComparison, removeSavedComparison, upsertSession, removeSession, pushRecent]);
 
   return <AtlasCtx.Provider value={value}>{children}</AtlasCtx.Provider>;
 }

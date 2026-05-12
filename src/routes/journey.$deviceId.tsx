@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Layers, Network, Users, Wrench, Workflow } from "lucide-react";
+import { ArrowLeft, ExternalLink, Layers, Network, Stethoscope, Users, Wrench, Workflow } from "lucide-react";
 import { useMemo, useState } from "react";
 import { JourneyDisclaimer } from "@/components/journey/JourneyDisclaimer";
+import { ScenarioBreakdown } from "@/components/journey/ScenarioBreakdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getDevice } from "@/lib/atlas/data";
 import { journeyContentFor } from "@/lib/journey/journey-content";
@@ -78,6 +79,9 @@ function JourneyOverview() {
           </TabsTrigger>
           <TabsTrigger value="images" className="gap-1.5">
             <Network className="size-3.5" /> Images & data
+          </TabsTrigger>
+          <TabsTrigger value="scenarios" className="gap-1.5">
+            <Stethoscope className="size-3.5" /> Scenarios
           </TabsTrigger>
         </TabsList>
 
@@ -216,6 +220,10 @@ function JourneyOverview() {
               ))}
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="scenarios" className="space-y-4">
+          <ScenarioBreakdown modality={device.modality} />
         </TabsContent>
       </Tabs>
 

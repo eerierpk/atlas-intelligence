@@ -117,7 +117,9 @@ export function AppShell({ children, right }: { children: ReactNode; right?: Rea
           </button>
 
           <div className="text-right leading-tight hidden lg:block ml-1">
-            <div className="text-xs font-medium">{user.name}</div>
+            <div className="text-xs font-medium flex items-center justify-end gap-1.5">{user.name}
+              <span className="chip chip-accent !py-0 !px-1.5 text-[9px] uppercase tracking-wider">{user.userRole}</span>
+            </div>
             <div className="text-[10px] text-muted-foreground">{user.role}</div>
           </div>
           <button
