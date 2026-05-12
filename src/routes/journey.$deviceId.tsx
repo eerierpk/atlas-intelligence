@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Layers, Network, Users, Wrench, Workflow } from "lucide-react";
+import { ArrowLeft, ExternalLink, Layers, Network, Stethoscope, Users, Wrench, Workflow } from "lucide-react";
 import { useMemo, useState } from "react";
 import { JourneyDisclaimer } from "@/components/journey/JourneyDisclaimer";
+import { ScenarioBreakdown } from "@/components/journey/ScenarioBreakdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getDevice } from "@/lib/atlas/data";
 import { journeyContentFor } from "@/lib/journey/journey-content";
