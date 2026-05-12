@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ArrowLeft, ArrowRight, BadgeCheck, Check, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight, BadgeCheck, Check, Loader2, X } from "lucide-react";
 import type { UserRole } from "@/lib/atlas/store";
 
 export interface SignupData {
@@ -21,6 +21,7 @@ const ROLES: { value: UserRole; description: string }[] = [
 
 export function SignupWizard({ onClose, onComplete }: { onClose: () => void; onComplete: (d: SignupData) => void }) {
   const [step, setStep] = useState(0);
+  const [creatingAccount, setCreatingAccount] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +41,19 @@ export function SignupWizard({ onClose, onComplete }: { onClose: () => void; onC
     }
     setStep(s => s + 1);
   };
-  const back = () => setStep(s => Math.max(0, s - 1));
+  const back = () => {
+    if (creatingAccount) return;
+    setStep(s => Math.max(0, s - 1));
+  };
+
+  useEffect(() => {
+    if (!creatingAccount) return;
+    const t = window.setTimeout(() => {
+      setCreatingAccount(false);
+      setStep(3);
+    }, 1600);
+    return () => window.clearTimeout(t);
+  }, [creatingAccount]);
 
   const submit = () => {
     onComplete({
@@ -59,7 +72,9 @@ export function SignupWizard({ onClose, onComplete }: { onClose: () => void; onC
         <div className="flex items-center justify-between mb-4">
           <div>
             <div className="text-sm font-semibold">Create account</div>
-            <div className="text-[11px] text-muted-foreground">Step {step + 1} of 4 · Demo only</div>
+            <div className="text-[11px] text-muted-foreground">
+              {creatingAccount ? "Finalizing… · Demo only" : `Step ${step + 1} of 4 · Demo only`}
+            </div>
           </div>
           <button onClick={onClose} className="size-7 grid place-items-center rounded-md border border-border"><X className="size-3.5" /></button>
         </div>
@@ -67,11 +82,34 @@ export function SignupWizard({ onClose, onComplete }: { onClose: () => void; onC
         {/* Progress */}
         <div className="flex gap-1 mb-5">
           {[0, 1, 2, 3].map(i => (
-            <div key={i} className={`h-1 flex-1 rounded-full ${i <= step ? "bg-[var(--color-primary)]" : "bg-[var(--color-secondary)]"}`} />
+            <div
+              key={i}
+              className={`h-1 flex-1 rounded-full transition-colors ${
+                creatingAccount
+                  ? i < 3
+                    ? "bg-[var(--color-primary)]"
+                    : i === 3
+                      ? "bg-[var(--color-primary)]/40 animate-pulse"
+                      : "bg-[var(--color-secondary)]"
+                  : i <= step
+                    ? "bg-[var(--color-primary)]"
+                    : "bg-[var(--color-secondary)]"
+              }`}
+            />
           ))}
         </div>
 
-        {step === 0 && (
+        {creatingAccount && (
+          <div className="flex flex-col items-center justify-center gap-3 py-10 px-2">
+            <Loader2 className="size-9 animate-spin text-[var(--color-primary)]" aria-hidden />
+            <div className="text-sm font-medium text-center">Creating your account…</div>
+            <p className="text-[11px] text-muted-foreground text-center max-w-[260px] leading-relaxed">
+              Provisioning workspace and role (simulated — no server in this prototype).
+            </p>
+          </div>
+        )}
+
+        {!creatingAccount && step === 0 && (
           <div className="flex flex-col gap-3">
             <Field label="Name"><Input value={name} onChange={setName} placeholder="Full name" /></Field>
             <Field label="Email"><Input value={email} onChange={setEmail} placeholder="you@hospital.org" type="email" /></Field>
@@ -80,7 +118,7 @@ export function SignupWizard({ onClose, onComplete }: { onClose: () => void; onC
           </div>
         )}
 
-        {step === 1 && (
+        {!creatingAccount && step === 1 && (
           <div className="flex flex-col gap-2">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Choose your role</div>
             {ROLES.map(r => (
@@ -99,7 +137,7 @@ export function SignupWizard({ onClose, onComplete }: { onClose: () => void; onC
           </div>
         )}
 
-        {step === 2 && (
+        {!creatingAccount && step === 2 && (
           <div className="flex flex-col gap-3">
             <Field label="Gender (optional)"><Input value={gender} onChange={setGender} /></Field>
             <Field label="Years of experience (optional)">
@@ -117,7 +155,7 @@ export function SignupWizard({ onClose, onComplete }: { onClose: () => void; onC
           </div>
         )}
 
-        {step === 3 && (
+        {!creatingAccount && step === 3 && (
           <div className="text-center py-4">
             <div className="size-14 mx-auto rounded-full bg-[var(--color-primary)]/15 grid place-items-center"><BadgeCheck className="size-7 text-[var(--color-primary)]" /></div>
             <div className="mt-3 text-base font-semibold">Account ready</div>
@@ -131,13 +169,33 @@ export function SignupWizard({ onClose, onComplete }: { onClose: () => void; onC
         {error && <div className="text-xs text-[var(--color-destructive)] mt-3">{error}</div>}
 
         <div className="mt-5 flex items-center justify-between">
-          {step > 0 ? (
-            <button onClick={back} className="h-9 px-3 rounded-md border border-border text-sm flex items-center gap-1.5"><ArrowLeft className="size-3.5" /> Back</button>
-          ) : <span />}
-          {step < 3 ? (
-            <button onClick={next} className="h-9 px-3 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm flex items-center gap-1.5">Continue <ArrowRight className="size-3.5" /></button>
+          {creatingAccount ? (
+            <span className="text-[11px] text-muted-foreground">Please wait…</span>
+          ) : step > 0 ? (
+            <button type="button" onClick={back} className="h-9 px-3 rounded-md border border-border text-sm flex items-center gap-1.5">
+              <ArrowLeft className="size-3.5" /> Back
+            </button>
           ) : (
-            <button onClick={submit} className="h-9 px-4 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm flex items-center gap-1.5">Enter Atlas <ArrowRight className="size-3.5" /></button>
+            <span />
+          )}
+          {creatingAccount ? <span /> : step < 3 ? (
+            <button
+              type="button"
+              onClick={() => {
+                if (step === 2) {
+                  setCreatingAccount(true);
+                } else {
+                  next();
+                }
+              }}
+              className="h-9 px-3 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm flex items-center gap-1.5"
+            >
+              Continue <ArrowRight className="size-3.5" />
+            </button>
+          ) : (
+            <button type="button" onClick={submit} className="h-9 px-4 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm flex items-center gap-1.5">
+              Enter Atlas <ArrowRight className="size-3.5" />
+            </button>
           )}
         </div>
       </div>

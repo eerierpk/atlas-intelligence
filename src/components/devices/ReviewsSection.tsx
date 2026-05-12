@@ -71,8 +71,10 @@ function Stars({ value }: { value: number }) {
   );
 }
 
+type DraftRating = 0 | DeviceReview["rating"];
+
 function ReviewModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (r: Omit<DeviceReview, "id" | "date">) => void }) {
-  const [rating, setRating] = useState<DeviceReview["rating"]>(5);
+  const [rating, setRating] = useState<DraftRating>(0);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [role, setRole] = useState("Imaging Lead (anonymized site)");
@@ -90,12 +92,17 @@ function ReviewModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (r:
         <div className="flex flex-col gap-3">
           <div>
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Rating</div>
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map(n => (
-                <button key={n} type="button" onClick={() => setRating(n as DeviceReview["rating"])}>
-                  <Star className={`size-5 ${n <= rating ? "fill-[var(--color-warning)] text-[var(--color-warning)]" : "text-muted-foreground"}`} />
-                </button>
-              ))}
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map(n => (
+                  <button key={n} type="button" onClick={() => setRating(n as DeviceReview["rating"])}>
+                    <Star className={`size-5 ${n <= rating ? "fill-[var(--color-warning)] text-[var(--color-warning)]" : "text-muted-foreground"}`} />
+                  </button>
+                ))}
+              </div>
+              {rating === 0 && (
+                <span className="text-[10px] text-muted-foreground">Select 1–5 stars to submit.</span>
+              )}
             </div>
           </div>
           <Field label="Title">
@@ -118,11 +125,20 @@ function ReviewModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (r:
           <div className="flex items-center justify-end gap-2 pt-1">
             <button onClick={onClose} className="h-9 px-3 rounded-md border border-border text-sm">Cancel</button>
             <button
-              onClick={() => onSubmit({
-                rating, title: title || "Review", body: body || "—", reviewerRole: role,
-                tags: tags.split(",").map(t => t.trim()).filter(Boolean),
-              })}
-              className="h-9 px-3 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm"
+              type="button"
+              disabled={rating === 0}
+              title={rating === 0 ? "Choose a star rating first" : undefined}
+              onClick={() => {
+                if (rating === 0) return;
+                onSubmit({
+                  rating,
+                  title: title || "Review",
+                  body: body || "—",
+                  reviewerRole: role,
+                  tags: tags.split(",").map(t => t.trim()).filter(Boolean),
+                });
+              }}
+              className="h-9 px-3 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm disabled:opacity-50 disabled:pointer-events-none"
             >
               Submit
             </button>

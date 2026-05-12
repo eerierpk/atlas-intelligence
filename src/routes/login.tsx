@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Activity, ArrowRight, ShieldCheck, Sparkles, Lock, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AGENTS } from "@/lib/atlas/agents";
-import { useAtlas } from "@/lib/atlas/store";
+import { DEMO_EXPERT_EMAIL, useAtlas } from "@/lib/atlas/store";
 import { SignupWizard } from "@/components/auth/SignupWizard";
 
 export const Route = createFileRoute("/login")({
@@ -32,7 +32,19 @@ function LoginPage() {
     navigate({ to: "/dashboard" });
   };
 
-  const demoLogin = () => { login("demo.user@medintel.io"); navigate({ to: "/dashboard" }); };
+  const demoLogin = () => {
+    login("demo.user@medintel.io");
+    navigate({ to: "/dashboard" });
+  };
+
+  const demoExpertLogin = () => {
+    login(DEMO_EXPERT_EMAIL, {
+      name: "Dr. Demo Expert",
+      role: "Clinical Content Reviewer — Demo",
+      userRole: "Healthcare Expert",
+    });
+    navigate({ to: "/dashboard" });
+  };
 
   return (
     <div className="min-h-screen grid lg:grid-cols-[1.1fr_1fr]">
@@ -121,12 +133,20 @@ function LoginPage() {
 
             <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={demoLogin} className="h-10 rounded-md border border-border hover:border-primary/40 text-sm flex items-center justify-center gap-2">
-                <Lock className="size-3.5" /> Demo User
+                <Lock className="size-3.5" /> Demo user
               </button>
-              <button type="button" onClick={() => setShowSignup(true)} className="h-10 rounded-md border border-border hover:border-primary/40 text-sm flex items-center justify-center gap-2">
+              <button type="button" onClick={demoExpertLogin} className="h-10 rounded-md border border-border hover:border-primary/40 text-sm flex items-center justify-center gap-2">
+                <Lock className="size-3.5 text-[var(--color-primary)]" /> Demo expert
+              </button>
+              <button type="button" onClick={() => setShowSignup(true)} className="col-span-2 h-10 rounded-md border border-border hover:border-primary/40 text-sm flex items-center justify-center gap-2">
                 <UserPlus className="size-3.5" /> Sign up
               </button>
             </div>
+            <p className="text-[10px] text-muted-foreground leading-relaxed mt-2">
+              <span className="text-foreground/80 font-medium">Expert demo sign-in:</span>{" "}
+              <span className="font-mono text-foreground/90">{DEMO_EXPERT_EMAIL}</span>
+              {" "}— use the form above with any password (4+ chars), or tap <strong className="text-foreground">Demo expert</strong>.
+            </p>
           </form>
 
           <div className="divider my-6" />

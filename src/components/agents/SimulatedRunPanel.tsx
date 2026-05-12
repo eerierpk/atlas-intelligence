@@ -53,8 +53,8 @@ export function SimulatedRunPanel({ status, steps, onStart, onReset, output, inp
   }, [status, controlled, steps]);
 
   return (
-    <div className="grid lg:grid-cols-[1.1fr_1fr] gap-4">
-      <div className="panel-elevated p-4">
+    <div className="grid min-w-0 lg:grid-cols-[1.1fr_1fr] gap-4">
+      <div className="panel-elevated p-4 min-w-0 overflow-hidden">
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="text-sm font-semibold flex items-center gap-2"><Activity className="size-4 text-[var(--color-primary)]" /> Job</div>
           <div className="flex items-center gap-1.5">
@@ -72,7 +72,7 @@ export function SimulatedRunPanel({ status, steps, onStart, onReset, output, inp
             </button>
           </div>
         </div>
-        {inputs && <div className="mb-4">{inputs}</div>}
+        {inputs && <div className="mb-4 min-w-0 max-w-full">{inputs}</div>}
 
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Steps</div>
         <ol className="space-y-2">
@@ -80,23 +80,23 @@ export function SimulatedRunPanel({ status, steps, onStart, onReset, output, inp
             const done = i < activeStep || status === "done";
             const running = status === "running" && i === activeStep;
             return (
-              <li key={i} className="flex items-center gap-2 text-xs">
-                {done ? <CheckCircle2 className="size-3.5 text-[var(--color-success)]" />
-                  : running ? <span className="size-3.5 rounded-full border-2 border-[var(--color-primary)] border-t-transparent animate-spin" />
-                  : <Clock className="size-3.5 text-muted-foreground" />}
-                <span className={done ? "text-foreground" : running ? "text-foreground font-medium" : "text-muted-foreground"}>{s.label}</span>
+              <li key={i} className="flex items-start gap-2 text-xs min-w-0">
+                {done ? <CheckCircle2 className="size-3.5 shrink-0 mt-0.5 text-[var(--color-success)]" />
+                  : running ? <span className="size-3.5 shrink-0 mt-0.5 rounded-full border-2 border-[var(--color-primary)] border-t-transparent animate-spin" />
+                  : <Clock className="size-3.5 shrink-0 mt-0.5 text-muted-foreground" />}
+                <span className={`min-w-0 break-words ${done ? "text-foreground" : running ? "text-foreground font-medium" : "text-muted-foreground"}`}>{s.label}</span>
               </li>
             );
           })}
         </ol>
       </div>
 
-      <div className="panel-elevated p-4">
+      <div className="panel-elevated p-4 min-w-0 overflow-hidden">
         <div className="text-sm font-semibold mb-2">Activity log</div>
         <div className="rounded-md border border-border bg-[var(--color-background)]/50 p-3 h-40 overflow-auto text-[11px] font-mono space-y-1">
           {logs.length === 0 && <div className="text-muted-foreground">— idle —</div>}
           {logs.map((l, i) => (
-            <div key={i} className="flex gap-2"><span className="text-muted-foreground shrink-0">{l.ts}</span><span>{l.text}</span></div>
+            <div key={i} className="flex gap-2 min-w-0"><span className="text-muted-foreground shrink-0">{l.ts}</span><span className="min-w-0 break-words">{l.text}</span></div>
           ))}
         </div>
 
@@ -105,7 +105,7 @@ export function SimulatedRunPanel({ status, steps, onStart, onReset, output, inp
           <div className="text-xs text-muted-foreground">Run hasn't completed yet.</div>
         ) : (
           <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="rounded-md border border-border p-3 bg-[var(--color-surface)]/60">
-            <p className="text-xs leading-relaxed">{output.summary}</p>
+            <p className="text-xs leading-relaxed break-words">{output.summary}</p>
             <ul className="mt-2 list-disc pl-5 text-xs space-y-1 marker:text-[var(--color-primary)]">
               {output.bullets.map((b, i) => <li key={i}>{b}</li>)}
             </ul>

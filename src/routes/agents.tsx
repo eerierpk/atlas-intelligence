@@ -37,7 +37,7 @@ function AgentsPage() {
         </div>
       </div>
 
-      <div className="mt-5 grid lg:grid-cols-[300px_1fr] gap-4">
+      <div className="mt-5 grid min-w-0 gap-4 lg:grid-cols-[300px_1fr]">
         <div className="flex flex-col gap-2">
           {AGENTS.map(x => {
             const isActive = x.key === active;
@@ -63,7 +63,7 @@ function AgentsPage() {
           <p className="text-[10px] text-muted-foreground mt-2">Educational / procurement planning prototype. Not for clinical use.</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0">
           <div className="glass-panel p-4">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div>

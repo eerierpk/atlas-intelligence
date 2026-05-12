@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, Film, ImageIcon, Info, ListChecks, Play, Stethoscope, X } from "lucide-react";
 import { getScenariosForModality, type Scenario } from "@/lib/fixtures/scenarios";
@@ -7,6 +7,12 @@ import type { Modality } from "@/lib/atlas/types";
 export function ScenarioBreakdown({ modality }: { modality: Modality }) {
   const scenarios = getScenariosForModality(modality);
   const [scenarioId, setScenarioId] = useState<string>(scenarios[0]?.id ?? "");
+
+  useEffect(() => {
+    const list = getScenariosForModality(modality);
+    setScenarioId((prev) => (list.some((s) => s.id === prev) ? prev : list[0]?.id ?? ""));
+  }, [modality]);
+
   const scenario = scenarios.find(s => s.id === scenarioId) ?? scenarios[0];
 
   if (!scenario) {
@@ -36,7 +42,11 @@ export function ScenarioBreakdown({ modality }: { modality: Modality }) {
             </div>
           </label>
         </div>
-        <p className="mt-3 text-[11px] text-amber-300/90 dark:text-amber-200/80 bg-amber-500/10 border border-amber-500/30 rounded-md px-3 py-2">
+        <p className="mt-3 text-[11px] text-foreground/90 leading-relaxed border border-border rounded-md px-3 py-2 bg-[var(--color-surface)]/50">
+          <span className="font-medium text-[var(--color-primary)]">How to use this tab:</span>{" "}
+          {scenario.readingFramework}
+        </p>
+        <p className="mt-2 text-[11px] text-amber-300/90 dark:text-amber-200/80 bg-amber-500/10 border border-amber-500/30 rounded-md px-3 py-2">
           Teaching scenario — not patient-specific. Educational / planning prototype. Not for clinical use.
         </p>
       </div>
@@ -66,12 +76,14 @@ export function ScenarioBreakdown({ modality }: { modality: Modality }) {
         </div>
       </Section>
 
-      <Section icon={<Info className="size-4" />} title="Image / data guide (educational)">
+      <Section icon={<Info className="size-4" />} title="Representative output & what to notice (educational)">
         <ImageGuide scenario={scenario} />
-        <p className="text-[11px] text-muted-foreground mt-2">Labels reference general teaching materials only — they do not constitute interpretation or diagnosis.</p>
+        <p className="text-[11px] text-muted-foreground mt-2">
+          Hotspots describe how imaging data are read in teaching programs — not a diagnosis for any real study. Figures are schematics, not patient images.
+        </p>
       </Section>
 
-      <Section icon={<ListChecks className="size-4" />} title="Metrics (illustrative)">
+      <Section icon={<ListChecks className="size-4" />} title="What the scan encodes (typical vs example vs deviation)">
         <div className="rounded-md border border-border overflow-hidden">
           <table className="w-full text-xs">
             <thead className="bg-[var(--color-secondary)]/60">
@@ -92,10 +104,12 @@ export function ScenarioBreakdown({ modality }: { modality: Modality }) {
             </tbody>
           </table>
         </div>
-        <p className="text-[11px] text-muted-foreground mt-2">For all deviations: discuss with radiology / refer to institutional protocol. Not diagnostic guidance.</p>
+        <p className="text-[11px] text-muted-foreground mt-2">
+          “Typical range” is educational background; “example value” is a fabricated teaching number. Any concern from a real exam belongs with the treating clinician and radiology team — not this demo.
+        </p>
       </Section>
 
-      <Section icon={<ListChecks className="size-4" />} title="Next steps (generic)">
+      <Section icon={<ListChecks className="size-4" />} title="Follow-up & communication (illustrative pathways)">
         <ul className="list-disc pl-5 text-sm space-y-1.5 marker:text-[var(--color-primary)]">
           {scenario.nextSteps.map(n => <li key={n} className="text-foreground/90">{n}</li>)}
         </ul>
