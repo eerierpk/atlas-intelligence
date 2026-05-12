@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Activity, ArrowRight, ShieldCheck, Sparkles, Lock } from "lucide-react";
+import { Activity, ArrowRight, ShieldCheck, Sparkles, Lock, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AGENTS } from "@/lib/atlas/agents";
 import { useAtlas } from "@/lib/atlas/store";
+import { SignupWizard } from "@/components/auth/SignupWizard";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
