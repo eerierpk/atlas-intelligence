@@ -11,7 +11,8 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const { user, login } = useAtlas();
+  const { user, login, signup } = useAtlas();
+  const [showSignup, setShowSignup] = useState(false);
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
