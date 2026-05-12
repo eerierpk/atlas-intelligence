@@ -119,9 +119,14 @@ function LoginPage() {
               {loading ? "Authenticating…" : <>Sign in <ArrowRight className="size-4" /></>}
             </button>
 
-            <button type="button" onClick={demoLogin} className="h-10 rounded-md border border-border hover:border-primary/40 text-sm flex items-center justify-center gap-2">
-              <Lock className="size-3.5" /> Continue as Demo User
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={demoLogin} className="h-10 rounded-md border border-border hover:border-primary/40 text-sm flex items-center justify-center gap-2">
+                <Lock className="size-3.5" /> Demo User
+              </button>
+              <button type="button" onClick={() => setShowSignup(true)} className="h-10 rounded-md border border-border hover:border-primary/40 text-sm flex items-center justify-center gap-2">
+                <UserPlus className="size-3.5" /> Sign up
+              </button>
+            </div>
           </form>
 
           <div className="divider my-6" />
@@ -131,6 +136,17 @@ function LoginPage() {
           </p>
         </motion.div>
       </div>
+
+      {showSignup && (
+        <SignupWizard
+          onClose={() => setShowSignup(false)}
+          onComplete={(d) => {
+            signup(d);
+            setShowSignup(false);
+            navigate({ to: "/dashboard" });
+          }}
+        />
+      )}
     </div>
   );
 }
