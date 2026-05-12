@@ -80,6 +80,9 @@ function JourneyOverview() {
           <TabsTrigger value="images" className="gap-1.5">
             <Network className="size-3.5" /> Images & data
           </TabsTrigger>
+          <TabsTrigger value="scenarios" className="gap-1.5">
+            <Stethoscope className="size-3.5" /> Scenarios
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
