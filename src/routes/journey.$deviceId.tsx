@@ -55,7 +55,7 @@ function JourneyOverview() {
         <button
           type="button"
           onClick={() => navigate({ to: "/journey" })}
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-3"
         >
           <ArrowLeft className="size-3" /> All machines
         </button>

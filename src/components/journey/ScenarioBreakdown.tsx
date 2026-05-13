@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown, Film, ImageIcon, Info, ListChecks, Play, Stethoscope, X } from "lucide-react";
+import { Film, ImageIcon, Info, ListChecks, Play, Stethoscope, X } from "lucide-react";
+import { SearchableCombobox, type ComboOption } from "@/components/ui/searchable-combobox";
 import { getScenariosForModality, type Scenario } from "@/lib/fixtures/scenarios";
 import type { Modality } from "@/lib/atlas/types";
 
@@ -14,6 +15,10 @@ export function ScenarioBreakdown({ modality }: { modality: Modality }) {
   }, [modality]);
 
   const scenario = scenarios.find(s => s.id === scenarioId) ?? scenarios[0];
+  const scenarioOptions: ComboOption[] = useMemo(
+    () => scenarios.map(s => ({ value: s.id, label: s.name })),
+    [scenarios]
+  );
 
   if (!scenario) {
     return <div className="text-sm text-muted-foreground">No scenarios available for this modality yet.</div>;
@@ -28,19 +33,17 @@ export function ScenarioBreakdown({ modality }: { modality: Modality }) {
             <div className="text-sm font-semibold mt-0.5">{scenario.name}</div>
             <p className="text-xs text-muted-foreground mt-1 max-w-2xl">{scenario.shortDescription}</p>
           </div>
-          <label className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 min-w-[14rem]">
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Choose scenario</span>
-            <div className="relative">
-              <select
-                value={scenarioId}
-                onChange={e => setScenarioId(e.target.value)}
-                className="h-9 pr-8 pl-3 rounded-md bg-[var(--color-input)] border border-border text-xs outline-none appearance-none min-w-[14rem]"
-              >
-                {scenarios.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-              <ChevronDown className="size-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            </div>
-          </label>
+            <SearchableCombobox
+              options={scenarioOptions}
+              value={scenarioId}
+              onChange={(v) => v && setScenarioId(v)}
+              placeholder="Select scenario…"
+              searchPlaceholder="Search scenarios…"
+              triggerClassName="min-h-9 text-xs"
+            />
+          </div>
         </div>
         <p className="mt-3 text-[11px] text-foreground/90 leading-relaxed border border-border rounded-md px-3 py-2 bg-[var(--color-surface)]/50">
           <span className="font-medium text-[var(--color-primary)]">How to use this tab:</span>{" "}

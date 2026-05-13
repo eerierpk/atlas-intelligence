@@ -64,11 +64,11 @@ const MRI_BRAIN: Scenario = {
     name: "T1, T2, FLAIR, DWI (+ ADC map)",
     description: "Structural sequences plus diffusion-weighted data to separate vasogenic edema patterns from restricted diffusion patterns in teaching materials.",
     figures: [
-      { src: "/journey/sample-mri-schematic.svg", caption: "Educational schematic — not a patient scan; illustrates contrast concepts." },
+      { src: "/journey/mri-sagittal.jpg", caption: "Educational schematic — not a patient scan; illustrates contrast concepts." },
     ],
   },
   imageGuide: {
-    src: "/journey/sample-mri-schematic.svg",
+    src: "/journey/mri-sagittal.jpg",
     alt: "Educational brain MRI schematic",
     caption: "Hotspots: conceptual regions teachers use when explaining what each sequence emphasizes on a brain study.",
     hotspots: [
@@ -141,10 +141,10 @@ const MRI_SPINE: Scenario = {
   acquisition: {
     name: "Sagittal + axial T2-dominant lumbar protocol",
     description: "High-resolution T2 highlights CSF around the cauda equina and exiting roots; T1 adds marrow and foraminal fat contrast for teaching reads.",
-    figures: [{ src: "/journey/sample-mri-schematic.svg", caption: "Generic schematic stand-in — real spine MR uses dedicated spine coil and smaller FOV." }],
+    figures: [{ src: "/journey/mri-sagittal.jpg", caption: "Generic schematic stand-in — real spine MR uses dedicated spine coil and smaller FOV." }],
   },
   imageGuide: {
-    src: "/journey/sample-mri-schematic.svg",
+    src: "/journey/mri-sagittal.jpg",
     alt: "Stand-in schematic for spine teaching",
     caption: "Hotspots label what radiologists annotate on true sagittal/axial spine series (conceptual overlay).",
     hotspots: [
@@ -216,10 +216,10 @@ const CT_CHEST: Scenario = {
   acquisition: {
     name: "Helical chest CT — lung + mediastinal reconstructions",
     description: "Dual-window review is standard: high-frequency kernel emphasizes lung detail; smoother kernel aids mediastinal and liver dome assessment.",
-    figures: [{ src: "/journey/diagram-ct-dose.svg", caption: "Dose schematic — paired with windowing teaching below." }],
+    figures: [{ src: "/journey/ct.jpg", caption: "Dose schematic — paired with windowing teaching below." }],
   },
   imageGuide: {
-    src: "/journey/diagram-ct-dose.svg",
+    src: "/journey/ct.jpg",
     alt: "Teaching overlay for CT review concepts",
     caption: "Hotspots map to **how** readers switch contexts—not literal lung anatomy on this diagram.",
     hotspots: [
@@ -289,10 +289,10 @@ const CT_PE: Scenario = {
   acquisition: {
     name: "Helical CTA thorax after iodinated contrast",
     description: "Peak enhancement in main PA is goal; poor timing mimics filling defects in teaching pitfalls.",
-    figures: [{ src: "/journey/diagram-ct-dose.svg", caption: "Dose / timing teaching schematic — not a CTA image." }],
+    figures: [{ src: "/journey/ct.jpg", caption: "Dose / timing teaching schematic — not a CTA image." }],
   },
   imageGuide: {
-    src: "/journey/diagram-ct-dose.svg",
+    src: "/journey/ct.jpg",
     alt: "CTA teaching overlay",
     caption: "Conceptual labels for what reviewers scrutinize on true CTA series.",
     hotspots: [
@@ -360,11 +360,11 @@ const XR_CHEST: Scenario = {
   acquisition: {
     name: "PA + lateral chest radiograph",
     description: "Low-dose projection; magnification of anterior structures on lateral view is a teaching pitfall.",
-    figures: [{ src: "/journey/diagram-ecosystem.svg", caption: "Imaging pathway schematic — educational." }],
+    figures: [{ src: "/journey/xray.jpg", caption: "Chest X-ray — educational." }],
   },
   imageGuide: {
-    src: "/journey/diagram-ecosystem.svg",
-    alt: "Teaching workflow diagram",
+    src: "/journey/xray.jpg",
+    alt: "Chest X-ray teaching",
     caption: "On a real chest film, hotspots would sit on hilum, costophrenic angles, etc.—here the diagram only anchors **review steps**.",
     hotspots: [
       { xPct: 22, yPct: 42, label: "Trachea / carina", note: "Midline trachea deviation suggests mass, atelectasis, or tension physiology in teaching examples." },
@@ -431,11 +431,11 @@ const XR_KNEE: Scenario = {
   acquisition: {
     name: "AP standing + lateral knee",
     description: "Weight-bearing views accentuate cartilage loss compared with supine films in teaching comparisons.",
-    figures: [{ src: "/journey/diagram-ecosystem.svg", caption: "Pathway schematic — stand-in for knee series." }],
+    figures: [{ src: "/journey/xray.jpg", caption: "Knee X-ray — educational." }],
   },
   imageGuide: {
-    src: "/journey/diagram-ecosystem.svg",
-    alt: "Teaching diagram",
+    src: "/journey/xray.jpg",
+    alt: "Knee X-ray teaching",
     caption: "Conceptual hotspots for what is measured on real knee films.",
     hotspots: [
       { xPct: 35, yPct: 45, label: "Medial compartment", note: "Joint-space width compared to lateral side; asymmetry suggests medial osteoarthritis pattern in teaching." },
@@ -500,11 +500,11 @@ const US_ABDO: Scenario = {
   acquisition: {
     name: "Grayscale + color Doppler abdominal survey",
     description: "Real-time cine documents dynamic findings (peristalsis, vascular patency).",
-    figures: [{ src: "/journey/diagram-ecosystem.svg", caption: "Workflow schematic." }],
+    figures: [{ src: "/journey/ultrasound.jpg", caption: "Abdominal ultrasound — educational." }],
   },
   imageGuide: {
-    src: "/journey/diagram-ecosystem.svg",
-    alt: "Teaching diagram",
+    src: "/journey/ultrasound.jpg",
+    alt: "Ultrasound teaching",
     caption: "What sonographers annotate on true organ sweeps (conceptual).",
     hotspots: [
       { xPct: 25, yPct: 40, label: "Liver echotexture", note: "Compared to renal cortex; steatosis brightens liver relative to kidney in teaching examples." },
@@ -570,11 +570,11 @@ const US_DVT: Scenario = {
   acquisition: {
     name: "B-mode compression + Doppler adjunct",
     description: "No ionizing radiation; highly operator dependent.",
-    figures: [{ src: "/journey/diagram-ecosystem.svg", caption: "Workflow schematic." }],
+    figures: [{ src: "/journey/ultrasound.jpg", caption: "Venous ultrasound — educational." }],
   },
   imageGuide: {
-    src: "/journey/diagram-ecosystem.svg",
-    alt: "Teaching diagram",
+    src: "/journey/ultrasound.jpg",
+    alt: "Venous ultrasound teaching",
     caption: "Conceptual steps in venous US interpretation.",
     hotspots: [
       { xPct: 30, yPct: 45, label: "Common femoral vein", note: "First landmark; thrombus may propagate from iliac segments." },
@@ -640,11 +640,11 @@ const MAMMO: Scenario = {
   acquisition: {
     name: "Bilateral CC/MLO (± DBT)",
     description: "Low-dose X-ray; DBT reduces tissue overlap in teaching comparisons with 2D alone.",
-    figures: [{ src: "/journey/diagram-ecosystem.svg", caption: "Workflow schematic." }],
+    figures: [{ src: "/journey/mammography.jpg", caption: "Screening mammogram — educational." }],
   },
   imageGuide: {
-    src: "/journey/diagram-ecosystem.svg",
-    alt: "Teaching diagram",
+    src: "/journey/mammography.jpg",
+    alt: "Mammogram teaching",
     caption: "What radiologists annotate on true mammograms (conceptual).",
     hotspots: [
       { xPct: 28, yPct: 42, label: "Parenchymal density", note: "Fatty vs scattered vs heterogeneously dense vs extremely dense—impacts cancer masking and supplemental screening discussions." },
@@ -710,11 +710,11 @@ const MAMMO_DIAG: Scenario = {
   acquisition: {
     name: "Spot compression ± magnification ± targeted US",
     description: "Higher spatial resolution for microcalcifications on magnification in teaching materials.",
-    figures: [{ src: "/journey/diagram-ecosystem.svg", caption: "Workflow schematic." }],
+    figures: [{ src: "/journey/mammography.jpg", caption: "Diagnostic mammogram — educational." }],
   },
   imageGuide: {
-    src: "/journey/diagram-ecosystem.svg",
-    alt: "Teaching diagram",
+    src: "/journey/mammography.jpg",
+    alt: "Diagnostic mammogram teaching",
     caption: "How extra views change interpretation (conceptual).",
     hotspots: [
       { xPct: 40, yPct: 45, label: "Focal asymmetry", note: "May disperse on spot view if summation artifact; persists if true tissue." },
@@ -780,10 +780,10 @@ const PETCT: Scenario = {
   acquisition: {
     name: "Low-dose CT attenuation map + PET emission",
     description: "Fusion aligns metabolic signal to anatomy; attenuation correction artifacts are a teaching pitfall near metal and contrast.",
-    figures: [{ src: "/journey/diagram-petct-fusion.svg", caption: "PET/CT fusion schematic." }],
+    figures: [{ src: "/journey/pet-ct.jpg", caption: "PET/CT fusion schematic." }],
   },
   imageGuide: {
-    src: "/journey/diagram-petct-fusion.svg",
+    src: "/journey/pet-ct.jpg",
     alt: "PET/CT fusion schematic",
     caption: "Hotspots describe what reviewers compare on fused images.",
     hotspots: [
@@ -850,10 +850,10 @@ const PETCT_RESPONSE: Scenario = {
   acquisition: {
     name: "Same whole-body PET/CT protocol as baseline",
     description: "Side-by-side hanging protocols aid visual comparison in PACS teaching.",
-    figures: [{ src: "/journey/diagram-petct-fusion.svg", caption: "Fusion schematic." }],
+    figures: [{ src: "/journey/pet-ct.jpg", caption: "Fusion schematic." }],
   },
   imageGuide: {
-    src: "/journey/diagram-petct-fusion.svg",
+    src: "/journey/pet-ct.jpg",
     alt: "Fusion schematic",
     caption: "Teaching comparison points between time points.",
     hotspots: [

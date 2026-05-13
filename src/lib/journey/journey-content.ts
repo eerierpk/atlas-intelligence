@@ -271,10 +271,10 @@ const FIG_BY_MODALITY: Record<Modality, SampleFigure[]> = {
       credit: "MedIntel Atlas — educational diagram",
     },
     {
-      src: journeyAssetUrls.sampleMriSchematic,
-      alt: "Schematic sagittal head with greyscale bands suggesting MR contrast",
+      src: "/journey/mri-sagittal.jpg",
+      alt: "Sagittal T1-weighted MRI of the brain showing detailed soft-tissue contrast",
       caption: "MR emphasizes soft-tissue differences; real scans depend on sequence (T1, T2, FLAIR, etc.) and field strength.",
-      credit: "MedIntel Atlas — educational schematic (not a clinical image)",
+      credit: "Wikimedia Commons — CC BY-SA 2.0 (everyone's idle)",
     },
   ],
   CT: [

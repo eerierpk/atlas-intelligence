@@ -9,5 +9,5 @@
   <ellipse cx="138" cy="185" rx="8" ry="14" fill="#94a3b8" opacity="0.35"/>
   <ellipse cx="182" cy="188" rx="8" ry="14" fill="#94a3b8" opacity="0.35"/>
   <path d="M145 235 Q160 248 175 235" stroke="#64748b" stroke-width="2" fill="none" opacity="0.4"/>
-  <text x="160" y="360" text-anchor="middle" fill="#475569" font-family="system-ui,sans-serif" font-size="9">Not a real patient study  illustrates soft-tissue contrast idea.</text>
+  <text x="160" y="360" text-anchor="middle" fill="#475569" font-family="system-ui,sans-serif" font-size="9">Not a real patient study — illustrates soft-tissue contrast idea.</text>
 </svg>
