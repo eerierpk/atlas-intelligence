@@ -8,7 +8,7 @@
     <text x="50" y="92" font-size="11" fill="#94a3b8">Zone I ΓÇö public area</text>
 
     <rect x="80" y="110" width="440" height="250" rx="10" fill="#0f223e" stroke="#234060"/>
-    <text x="92" y="132" font-size="11" fill="#7dd3fc">Zone II ΓÇö greeting & screening</text>
+    <text x="92" y="132" font-size="11" fill="#7dd3fc">Zone II ΓÇö greeting &amp; screening</text>
 
     <rect x="140" y="160" width="320" height="180" rx="10" fill="#102a4d" stroke="#2a4f7a"/>
     <text x="152" y="182" font-size="11" fill="#fbbf24">Zone III ΓÇö restricted (5-gauss line contained)</text>
