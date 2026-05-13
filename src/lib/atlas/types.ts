@@ -74,6 +74,26 @@ export interface AISession {
   messages: AIMessage[];
 }
 
+/** Snapshot fields saved from Intel Expert agent (separate from AI chat sessions). */
+export interface IntelExpertDraftSnapshot {
+  tagline: string;
+  clinicalPositioning: string;
+  aiWorkflowNotes: string;
+  standardsIntegration: string;
+  dataSourceNotes: string;
+  procurementNotes: string;
+}
+
+export interface IntelExpertWorkspaceEntry {
+  id: string;
+  deviceId: string;
+  title: string;
+  vendor: Vendor;
+  modality: Modality;
+  createdAt: number;
+  draft: IntelExpertDraftSnapshot;
+}
+
 /** Structured procurement-style review shown in the AI panel (e.g. from a device detail page). */
 export interface DeviceReviewSnapshot {
   deviceId: string;

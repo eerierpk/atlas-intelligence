@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bookmark, GitCompare, Sparkles, Trash2, Share2, Mail, FileDown } from "lucide-react";
+import { Bookmark, GitCompare, Sparkles, Trash2, Share2, Mail, FileDown, ClipboardList } from "lucide-react";
 import { AppShell } from "@/components/atlas/AppShell";
 import { useAiPanelUi } from "@/lib/atlas/ai-panel-context";
 import { useAtlas } from "@/lib/atlas/store";
@@ -12,11 +12,20 @@ export const Route = createFileRoute("/saved")({
 
 function SavedPage() {
   const { open: openAiPanel } = useAiPanelUi();
-  const { savedDevices, toggleSaved, savedComparisons, removeSavedComparison, aiSessions, removeSession } = useAtlas();
+  const {
+    savedDevices,
+    toggleSaved,
+    savedComparisons,
+    removeSavedComparison,
+    aiSessions,
+    removeSession,
+    intelExpertSessions,
+    removeIntelExpertSession,
+  } = useAtlas();
 
   const shareState = {
     title: "Atlas Workspace",
-    summary: `Workspace snapshot: ${savedDevices.length} saved · ${savedComparisons.length} comparisons · ${aiSessions.length} AI sessions.`,
+    summary: `Workspace snapshot: ${savedDevices.length} saved devices · ${savedComparisons.length} comparisons · ${intelExpertSessions.length} Intel Expert drafts · ${aiSessions.length} AI sessions.`,
     deviceIds: savedDevices,
   };
 
@@ -29,6 +38,8 @@ function SavedPage() {
       </tbody></table>
       <h2>Saved comparisons (${savedComparisons.length})</h2>
       <ul>${savedComparisons.map(c => `<li><strong>${c.title}</strong> — ${c.deviceIds.map(id => getDevice(id)?.name).join(", ")}</li>`).join("")}</ul>
+      <h2>Intel Expert drafts (${intelExpertSessions.length})</h2>
+      <ul>${intelExpertSessions.map(e => `<li>${e.title} — ${e.vendor} · ${e.modality}</li>`).join("")}</ul>
       <h2>AI sessions (${aiSessions.length})</h2>
       <ul>${aiSessions.map(s => `<li>${s.title} (${s.messages.length} messages)</li>`).join("")}</ul>`;
     downloadHtmlReport(shareState, html);
@@ -39,7 +50,7 @@ function SavedPage() {
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Workspace</h1>
-          <p className="text-sm text-muted-foreground mt-1">Session-only — your saved devices, comparisons, AI threads, and exports.</p>
+          <p className="text-sm text-muted-foreground mt-1">Session-only — saved devices, comparisons, Intel Expert drafts, AI threads, and exports.</p>
         </div>
         <div className="flex gap-2">
           <button onClick={onReport} className="h-9 px-3 rounded-md border border-border text-sm flex items-center gap-1.5"><FileDown className="size-4" /> Generate report</button>
@@ -48,7 +59,7 @@ function SavedPage() {
         </div>
       </div>
 
-      <div className="mt-5 grid lg:grid-cols-3 gap-4">
+      <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Section title="Saved devices" icon={<Bookmark className="size-4 text-[var(--color-primary)]" />} count={savedDevices.length}>
           {savedDevices.length === 0 ? <Empty text="No saved devices yet." /> : (
             <ul className="flex flex-col gap-1.5">
@@ -83,14 +94,62 @@ function SavedPage() {
           )}
         </Section>
 
+        <Section title="Intel Expert drafts" icon={<ClipboardList className="size-4 text-[var(--color-primary)]" />} count={intelExpertSessions.length}>
+          {intelExpertSessions.length === 0 ? (
+            <Empty text="No Intel Expert drafts yet. Save a draft from Agents → Intel Expert." />
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {intelExpertSessions.map((e) => (
+                <li key={e.id} className="rounded-md border border-border p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0 text-sm font-medium truncate">{e.title}</div>
+                    <button
+                      type="button"
+                      onClick={() => removeIntelExpertSession(e.id)}
+                      className="shrink-0 text-muted-foreground hover:text-destructive"
+                      aria-label="Remove Intel Expert draft"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">
+                    {e.vendor} · {e.modality} · {new Date(e.createdAt).toLocaleString()}
+                  </div>
+                  <details className="mt-2 text-[11px]">
+                    <summary className="cursor-pointer text-[var(--color-primary)] hover:underline">View draft snapshot</summary>
+                    <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded-md border border-border bg-[var(--color-background)]/60 p-2 text-[10px] leading-relaxed text-muted-foreground">
+                      {[
+                        `Tagline: ${e.draft.tagline}`,
+                        "",
+                        `Clinical: ${e.draft.clinicalPositioning}`,
+                        "",
+                        `AI / workflow: ${e.draft.aiWorkflowNotes}`,
+                        "",
+                        `Standards: ${e.draft.standardsIntegration}`,
+                        "",
+                        `Sources: ${e.draft.dataSourceNotes}`,
+                        "",
+                        `Procurement: ${e.draft.procurementNotes || "—"}`,
+                      ].join("\n")}
+                    </pre>
+                  </details>
+                  <Link to="/agents" className="mt-2 inline-flex chip chip-accent">
+                    Continue in Agents →
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+
         <Section title="AI sessions" icon={<Sparkles className="size-4 text-[var(--color-primary)]" />} count={aiSessions.length}>
           {aiSessions.length === 0 ? <Empty text="No AI sessions yet." /> : (
             <ul className="flex flex-col gap-2">
               {aiSessions.map(s => (
                 <li key={s.id} className="rounded-md border border-border p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="text-sm font-medium truncate">{s.title}</div>
-                    <button onClick={() => removeSession(s.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="size-3.5" /></button>
+                    <div className="min-w-0 text-sm font-medium truncate">{s.title}</div>
+                    <button onClick={() => removeSession(s.id)} className="text-muted-foreground hover:text-destructive shrink-0"><Trash2 className="size-3.5" /></button>
                   </div>
                   <div className="text-[11px] text-muted-foreground mt-1">{s.messages.length} messages</div>
                   <button type="button" onClick={() => openAiPanel()} className="mt-2 inline-flex chip chip-accent">Open Ask AI →</button>
@@ -106,7 +165,7 @@ function SavedPage() {
 
 function Section({ title, icon, count, children }: { title: string; icon: React.ReactNode; count: number; children: React.ReactNode }) {
   return (
-    <div className="panel-elevated p-4">
+    <div className="panel-elevated min-w-0 p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5 text-sm font-semibold">{icon}{title}</div>
         <span className="chip">{count}</span>

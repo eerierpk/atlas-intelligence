@@ -13,6 +13,13 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    server: { port: 5173 },
+    server: {
+      port: 5173,
+      strictPort: true,
+    },
+    preview: {
+      port: 5173,
+      strictPort: true,
+    },
   },
 });

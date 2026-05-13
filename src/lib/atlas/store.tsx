@@ -1,9 +1,33 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import type { AISession, SavedComparison } from "./types";
+import type { AISession, IntelExpertWorkspaceEntry, SavedComparison } from "./types";
+
+export type UserRole = "Student" | "Healthcare Professional" | "Healthcare Expert" | "Business / Stakeholder" | "Admin";
+
+export interface AtlasUser {
+  name: string;
+  email: string;
+  /** Display title (free text). */
+  role: string;
+  /** Structured role enum used for RBAC simulation. */
+  userRole: UserRole;
+  gender?: string;
+  yearsExperience?: number;
+  specialization?: string;
+  /** Multi-select specialization tags from Appendix A taxonomy. */
+  specializations?: string[];
+  credentials?: string;
+  title?: string;
+}
+
+/** Demo expert email — signing in with this address grants Healthcare Expert role (prototype). */
+export const DEMO_EXPERT_EMAIL = "expert.demo@medintel.io";
+/** Demo admin email — signing in with this address grants Admin role (prototype). */
+export const DEMO_ADMIN_EMAIL = "admin@medintel.io";
 
 interface AtlasState {
-  user: { name: string; email: string; role: string } | null;
-  login: (email: string) => void;
+  user: AtlasUser | null;
+  login: (email: string, opts?: { name?: string; userRole?: UserRole; role?: string }) => void;
+  signup: (data: Omit<AtlasUser, "role"> & { role?: string }) => void;
   logout: () => void;
   savedDevices: string[];
   toggleSaved: (id: string) => void;
@@ -16,6 +40,9 @@ interface AtlasState {
   aiSessions: AISession[];
   upsertSession: (s: AISession) => void;
   removeSession: (id: string) => void;
+  intelExpertSessions: IntelExpertWorkspaceEntry[];
+  upsertIntelExpertSession: (e: IntelExpertWorkspaceEntry) => void;
+  removeIntelExpertSession: (id: string) => void;
   recentDeviceIds: string[];
   pushRecent: (id: string) => void;
 }
@@ -31,11 +58,37 @@ export function AtlasProvider({ children }: { children: ReactNode }) {
   const [comparisonIds, setComparisonIds] = useState<string[]>([]);
   const [savedComparisons, setSavedComparisons] = useState<SavedComparison[]>([]);
   const [aiSessions, setAiSessions] = useState<AISession[]>([]);
+  const [intelExpertSessions, setIntelExpertSessions] = useState<IntelExpertWorkspaceEntry[]>([]);
   const [recentDeviceIds, setRecentDeviceIds] = useState<string[]>([]);
 
-  const login = useCallback((email: string) => {
-    const name = email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || "Demo User";
-    setUser({ name, email, role: "Healthcare Infrastructure Strategy Lead" });
+  const login = useCallback((email: string, opts?: { name?: string; userRole?: UserRole; role?: string }) => {
+    const trimmed = email.trim();
+    const local = trimmed.split("@")[0] ?? "";
+    const defaultName =
+      local.replace(/[._-]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || "Demo User";
+    const lower = trimmed.toLowerCase();
+    const isExpertDemo = lower === DEMO_EXPERT_EMAIL.toLowerCase() || opts?.userRole === "Healthcare Expert";
+    const isAdminDemo = lower === DEMO_ADMIN_EMAIL.toLowerCase() || opts?.userRole === "Admin";
+    setUser({
+      name: opts?.name ?? defaultName,
+      email: trimmed,
+      role:
+        opts?.role ??
+        (isAdminDemo
+          ? "Atlas Administrator — Demo"
+          : isExpertDemo
+            ? "Clinical Content Reviewer — Demo"
+            : "Healthcare Infrastructure Strategy Lead"),
+      userRole:
+        opts?.userRole ??
+        (isAdminDemo ? "Admin" : isExpertDemo ? "Healthcare Expert" : "Healthcare Professional"),
+    });
+  }, []);
+  const signup = useCallback((data: Omit<AtlasUser, "role"> & { role?: string }) => {
+    setUser({
+      ...data,
+      role: data.role ?? data.userRole,
+    });
   }, []);
   const logout = useCallback(() => setUser(null), []);
 
@@ -69,18 +122,32 @@ export function AtlasProvider({ children }: { children: ReactNode }) {
   }, []);
   const removeSession = useCallback((id: string) => setAiSessions(p => p.filter(x => x.id !== id)), []);
 
+  const upsertIntelExpertSession = useCallback((e: IntelExpertWorkspaceEntry) => {
+    setIntelExpertSessions(prev => {
+      const idx = prev.findIndex(x => x.id === e.id);
+      if (idx >= 0) {
+        const copy = prev.slice();
+        copy[idx] = e;
+        return copy;
+      }
+      return [e, ...prev];
+    });
+  }, []);
+  const removeIntelExpertSession = useCallback((id: string) => setIntelExpertSessions(p => p.filter(x => x.id !== id)), []);
+
   const pushRecent = useCallback((id: string) => {
     setRecentDeviceIds(prev => [id, ...prev.filter(x => x !== id)].slice(0, 8));
   }, []);
 
   const value = useMemo<AtlasState>(() => ({
-    user, login, logout,
+    user, login, signup, logout,
     savedDevices, toggleSaved,
     comparisonIds, toggleCompare, clearCompare,
     savedComparisons, saveComparison, removeSavedComparison,
     aiSessions, upsertSession, removeSession,
+    intelExpertSessions, upsertIntelExpertSession, removeIntelExpertSession,
     recentDeviceIds, pushRecent,
-  }), [user, savedDevices, comparisonIds, savedComparisons, aiSessions, recentDeviceIds, login, logout, toggleSaved, toggleCompare, clearCompare, saveComparison, removeSavedComparison, upsertSession, removeSession, pushRecent]);
+  }), [user, savedDevices, comparisonIds, savedComparisons, aiSessions, intelExpertSessions, recentDeviceIds, login, signup, logout, toggleSaved, toggleCompare, clearCompare, saveComparison, removeSavedComparison, upsertSession, removeSession, upsertIntelExpertSession, removeIntelExpertSession, pushRecent]);
 
   return <AtlasCtx.Provider value={value}>{children}</AtlasCtx.Provider>;
 }

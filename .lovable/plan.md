@@ -1,66 +1,80 @@
-## Machine Journey — Guided Learning Experience (additive)
+# MedIntel Atlas v2 — Build Plan
 
-A net-new, additive learning module for MedIntel Atlas. No existing route, layout, or feature is modified beyond inserting a single nav entry.
+Additive changes; preserves existing app shell, theme, device catalog, journey, ROI, and current routes.
 
-### Scope guardrails
-- Add exactly one item to `NAV` in `src/components/atlas/AppShell.tsx` (`/journey`, label "Machine Journey", icon `GraduationCap`). No other AppShell changes.
-- All new code under `src/routes/journey.tsx`, `src/routes/journey.$deviceId.tsx`, and `src/components/journey/*` + `src/lib/journey/*`.
-- Reuse existing tokens (`glass-panel`, `--color-*`), Tabs, Accordion, Progress, Badge, etc. No restyle of shared primitives.
-- Persistent footer disclaimer on every journey screen.
+## 1. Searchable Combobox primitive (global)
 
-### Routes
-1. `/journey` — Machine picker
-   - Reuses `DEVICES` from `src/lib/atlas/data.ts` with modality filter chips (MRI / CT / X-ray / US / Mammo / PET-CT).
-   - Resume card if `localStorage` has prior progress.
-   - "Estimated 25–40 min" badge + curriculum preview per modality.
-2. `/journey/$deviceId` — Course shell
-   - Header: device name, vendor, modality, overall progress bar, bookmark, reset.
-   - Vertical sub-nav (matches device-detail vertical-tabs pattern): **Overview · Setup Flow · Use Flow · Elements Map · Glossary · Resources**.
-   - Each section renders chapter list → lessons (accordion) → checkpoint quiz at end.
+New `src/components/ui/searchable-combobox.tsx` built on existing `cmdk` + `Popover` (already in shadcn). Single + multi-select variants with:
+- type-to-filter, arrow keys, Enter/Esc, click-outside, clear button, "No matches" empty state, chip rendering for multi
+- ARIA listbox roles, focus-visible rings, 44px min targets on touch
+- Used everywhere lists are picked: gender, role, specializations, region/modality filters in Explore/Compare, agent switcher, admin role picker, signup-style fields wherever they remain. Sweep replaces `<select>` and ad-hoc dropdowns in: `explore.tsx`, `compare.tsx`, `roi.tsx`, `agents.tsx`, `journey.tsx`, hospitals filter, AppShell user menu where applicable.
 
-### Data model (`src/lib/journey/curriculum.ts`)
-```
-Curriculum = {
-  modality, overview, setup: Chapter[], use: Chapter[],
-  elements: { hardware: Tile[]; software: Tile[]; ecosystem: Tile[] },
-  glossary: Term[], resources: Resource[]
-}
-Chapter = { id, title, summary, lessons: Lesson[], checkpoint: Quiz }
-Lesson  = { id, title, body (MDX-ish blocks: paragraph | callout | image | list | tagTable | flowNode), deepDive? }
-Quiz    = { questions: { q, type: 'single'|'multi', options, correct[], rationale }[] }
-```
-- Shared "spine" curriculum + per-modality overlays (MRI gets RF shielding/5-gauss/SAR/coils; CT gets CTDIvol/DLP/contrast; XR ALARA; US probe hygiene; Mammo compression/QC; PET/CT uptake/fusion).
-- Glossary ≥40 terms (DICOM, PACS, RIS, HL7 v2, FHIR ImagingStudy, MWL, DICOMweb WADO/QIDO/STOW, VNA, IHE SWF, SNR, SAR, CTDIvol, DLP, ALARA, MIP, MPR, etc.) with cross-link tokens `[[term]]` rendered as hover popovers.
+## 2. Admin module
 
-### Progress (`src/lib/journey/progress.ts`)
-- `localStorage` key `medintel.journey.v1` → `{ [deviceId]: { completedLessons: string[], quizScores: {chapterId:%}, lastLessonId, bookmarks[] } }`.
-- Hook `useJourneyProgress(deviceId)` exposing `markComplete`, `setLast`, `toggleBookmark`, `pct`.
+- Add `Admin` to `UserRole` enum in `src/lib/atlas/types.ts` + permissions map
+- New `src/routes/admin.tsx` — gated by `Admin` role (redirect to dashboard otherwise); sidebar entry with `ShieldCheck` icon shown only for admins
+- `src/lib/atlas/admin-store.ts` — in-memory + `localStorage` user directory; seeds 1 admin (`admin@medintel.io`) and a few sample users
+- Components in `src/components/admin/`:
+  - `UserTable.tsx` — name, email, role, status, last login, created, gender, specialization chips; mobile = card list
+  - `CreateUserDialog.tsx` — name, email, role combobox, gender combobox (Male / Female / Do not want to specify), specialization multi-select from Appendix A, optional title/department/phone
+  - `EditUserDialog.tsx`, deactivate, reset access (mock)
+  - `CredentialsModal.tsx` — "Simulated email queued" with copyable temp password; Demo Outbox panel of last 10
+- New seed admin demo login button on `/login` (replaces signup wizard button)
 
-### Components (`src/components/journey/`)
-- `MachinePicker.tsx` — modality filter + device grid (light wrapper around existing card style).
-- `CourseShell.tsx` — vertical sub-nav + progress header + footer disclaimer.
-- `ChapterList.tsx`, `LessonAccordion.tsx`, `LessonRenderer.tsx` (renders block types).
-- `Checkpoint.tsx` — quiz with non-punitive feedback + rationale + glossary cross-links.
-- `ElementsMap.tsx` — layered diagram (CSS grid: Modality → Workstation → Network → Archive/Cloud); each tile opens a Sheet with the lesson stub.
-- `FlowDiagram.tsx` — clickable horizontal flow for Setup (Procurement → Regulatory → Site Plan → Delivery → Install → Integration → Acceptance → Training → Go-live → Post-go-live) and Use (Order → ID/Consent → Screening → Prep → Acquisition → Post-proc → PACS → Report).
-- `Glossary.tsx` — searchable list + anchor links.
-- `DicomTagTable.tsx` — synthetic, anonymized tag table illustration.
-- `JourneyDisclaimer.tsx` — sticky footer banner.
+## 3. Specialization taxonomy
 
-### Imagery (≥10 assets)
-- 6 generated SVG/PNG diagrams under `src/assets/journey/` (DICOM header schematic, layered ecosystem diagram, MR safety zones I–IV, CT dose concept, PET/CT fusion concept, US transducer/TGC). Generated via `imagegen--generate_image` (fast tier) — synthetic, clearly labeled "Educational diagram".
-- 4 public-domain clinical-style examples sourced via curated URLs from Wikimedia Commons (Chest XR, CT axial lung-window, MR brain T1, US still). Stored as remote `<img>` with caption + attribution; `loading="lazy"`.
+- `src/lib/atlas/specializations.ts` — Appendix A flat list + group labels (Physician / Subspecialty / Allied)
+- Used by admin create/edit and profile model
 
-### Modality coverage matrix
-For each of 6 modalities: shared spine (5 setup + 5 use chapters) + 3 modality-specific setup + 3 modality-specific use + 12 element tiles. Hits the "≥8 setup, ≥8 use, ≥12 elements" bar.
+## 4. Profile model + signup removal
 
-### Non-functional
-- Route is code-split (own file). Heavy lesson content lives in `src/lib/journey/content/{modality}.ts` lazy-imported per device.
-- All interactive elements keyboard-accessible; alt text on every image; respects existing dark/light theme tokens.
+- Extend `UserProfile` with `gender`, `specializations: string[]`, `title`, `credentials`, `yearsExperience`
+- `src/routes/login.tsx`: remove SignupWizard button + modal mount; keep only sign in + demo + demo expert + (new) demo admin
+- `SignupWizard.tsx` left in repo but unmounted (no broken imports). Add a "Request access" link that opens a small toast/dialog explaining admin provisioning.
 
-### Demo flow (added to README)
-Sidebar → Machine Journey → pick a Siemens MAGNETOM → Setup Flow → expand "Site Planning" → view 5-gauss diagram → take checkpoint → Elements Map → click "DICOM MWL" tile → Glossary cross-link.
+## 5. Chat-first Agents (Ask AI panel refactor)
 
-### Out of scope
-- No edits to existing routes, data files, store, or theme.
-- No backend, no real PHI, no OEM-specific procedures.
+- Refactor `AtlasChatPanel.tsx`:
+  - Add **agent switcher** at top: searchable combobox with `Ask Atlas`, `Intel Expert`, `Document / Video Ingest`, `Public Web Scout`
+  - Per-agent **separate thread state** kept in `ai-panel-context` (`Record<AgentId, AIMessage[]>`)
+  - Collapsible "How this agent works" header per agent (inputs, guardrails, simulated latency)
+  - Composer toolbar: file upload chip, URL chip, device chip → render as input summary chips on user message
+  - Assistant messages render structured sections: Summary · Key bullets · Table/cards · Sources (simulated) · Confidence · Next steps (extend `AIMessage` shape with optional `structured` block; existing renderer keeps backward compat)
+  - Smooth 200ms fade/slide on agent switch
+- `/agents` route becomes a **launcher**: cards that open the panel pre-selected to that agent (existing simulation components still accessible via "Open detailed run")
+
+## 6. Responsive pass
+
+- AppShell: sidebar already has mobile drawer; verify and add bottom safe-area + hamburger visible <768px; ensure no horizontal overflow
+- Tables in admin, hospitals, compare → wrap in `overflow-x-auto` with sticky first col, OR mobile card fallback (admin gets card fallback)
+- Modals: `max-w-full sm:max-w-lg` pattern; full-height sheet for Ask AI on `<sm`
+- Audit pages at 375 / 768 / 1280 via browser tool after build
+
+## 7. Polish
+
+- Focus-visible ring tokens already in styles.css; ensure combobox uses them
+- Skeletons stay as-is; add empty states to admin user list
+
+## File map
+
+**New**
+- `src/components/ui/searchable-combobox.tsx`
+- `src/lib/atlas/specializations.ts`
+- `src/lib/atlas/admin-store.ts`
+- `src/routes/admin.tsx`
+- `src/components/admin/{UserTable,CreateUserDialog,EditUserDialog,CredentialsModal}.tsx`
+- `src/components/agents/AgentSwitcher.tsx`
+
+**Edited**
+- `src/lib/atlas/types.ts` (Admin role, profile fields, AIMessage.structured, AgentId)
+- `src/lib/atlas/permissions.ts` (Admin perms)
+- `src/lib/atlas/store.tsx` (admin login seed, profile fields)
+- `src/lib/atlas/ai-panel-context.tsx` (per-agent thread state, current agent)
+- `src/components/atlas/AtlasChatPanel.tsx` (agent switcher, structured rendering, composer)
+- `src/components/atlas/AppShell.tsx` (admin nav entry, mobile polish)
+- `src/routes/login.tsx` (remove signup, add demo admin)
+- `src/routes/agents.tsx` (launcher cards)
+- `src/routes/explore.tsx`, `compare.tsx`, `roi.tsx`, `journey.tsx`, hospitals filter (combobox sweep)
+
+## Out of scope
+- Real auth/SMTP, real RBAC server, real agent backends — all simulated with clear labels.
