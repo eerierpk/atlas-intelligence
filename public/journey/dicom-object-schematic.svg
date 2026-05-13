@@ -15,5 +15,5 @@
     <rect x="268" y="120" width="12" height="12" fill="#64748b"/><rect x="284" y="120" width="12" height="12" fill="#475569"/><rect x="300" y="120" width="12" height="12" fill="#334155"/><rect x="316" y="120" width="12" height="12" fill="#475569"/>
     <rect x="268" y="136" width="12" height="12" fill="#334155"/><rect x="284" y="136" width="12" height="12" fill="#64748b"/><rect x="300" y="136" width="12" height="12" fill="#94a3b8"/><rect x="316" y="136" width="12" height="12" fill="#475569"/>
   </g>
-  <text x="372" y="178" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Grayscale or colour image volume / slice</text>
+  <text x="372" y="170" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="9">Grayscale or colour image volume / slice</text>
 </svg>
