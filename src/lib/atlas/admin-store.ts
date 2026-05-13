@@ -9,6 +9,8 @@ export interface AdminUser {
   title?: string;
   department?: string;
   phone?: string;
+  /** Full years of professional experience (self-reported). */
+  yearsExperience?: number;
   gender: "Male" | "Female" | "Do not want to specify";
   specializations: string[];
   status: "active" | "disabled";
@@ -46,6 +48,7 @@ const SEED: Store = {
       status: "active",
       createdAt: Date.now() - 1000 * 60 * 60 * 24 * 30,
       lastLoginAt: Date.now() - 1000 * 60 * 60 * 2,
+      yearsExperience: 12,
     },
     {
       id: "u-expert",
@@ -59,6 +62,7 @@ const SEED: Store = {
       status: "active",
       createdAt: Date.now() - 1000 * 60 * 60 * 24 * 14,
       lastLoginAt: Date.now() - 1000 * 60 * 60 * 18,
+      yearsExperience: 22,
     },
     {
       id: "u-pro",
@@ -72,6 +76,7 @@ const SEED: Store = {
       status: "active",
       createdAt: Date.now() - 1000 * 60 * 60 * 24 * 7,
       lastLoginAt: Date.now() - 1000 * 60 * 60 * 24 * 3,
+      yearsExperience: 15,
     },
     {
       id: "u-stake",
@@ -85,6 +90,7 @@ const SEED: Store = {
       status: "active",
       createdAt: Date.now() - 1000 * 60 * 60 * 24 * 3,
       lastLoginAt: null,
+      yearsExperience: 8,
     },
   ],
   outbox: [],

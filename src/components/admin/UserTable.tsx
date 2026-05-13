@@ -21,6 +21,7 @@ export function UserTable({ users, onEdit, onReset, onToggleStatus }: Props) {
                 <Th>Role</Th>
                 <Th>Status</Th>
                 <Th>Gender</Th>
+                <Th>Exp (yrs)</Th>
                 <Th>Specializations</Th>
                 <Th>Last login</Th>
                 <Th>Created</Th>
@@ -42,6 +43,7 @@ export function UserTable({ users, onEdit, onReset, onToggleStatus }: Props) {
                     </span>
                   </Td>
                   <Td className="text-xs">{u.gender}</Td>
+                  <Td className="text-xs text-muted-foreground tabular-nums">{u.yearsExperience != null ? u.yearsExperience : "—"}</Td>
                   <Td>
                     <div className="flex flex-wrap gap-1 max-w-[18rem]">
                       {u.specializations.slice(0, 3).map(s => <span key={s} className="chip text-[10px]">{s}</span>)}
@@ -62,7 +64,7 @@ export function UserTable({ users, onEdit, onReset, onToggleStatus }: Props) {
                 </tr>
               ))}
               {users.length === 0 && (
-                <tr><td colSpan={8} className="p-10 text-center text-sm text-muted-foreground">No users match the current filters.</td></tr>
+                <tr><td colSpan={9} className="p-10 text-center text-sm text-muted-foreground">No users match the current filters.</td></tr>
               )}
             </tbody>
           </table>
@@ -86,6 +88,7 @@ export function UserTable({ users, onEdit, onReset, onToggleStatus }: Props) {
                 {u.status}
               </span>
               <span className="chip text-[10px]">{u.gender}</span>
+              {u.yearsExperience != null && <span className="chip text-[10px]">{u.yearsExperience} yrs</span>}
             </div>
             {u.specializations.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">

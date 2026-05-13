@@ -2,6 +2,10 @@
 
 AI-powered decision-intelligence workspace for hospital capital equipment and clinical infrastructure across the global medical technology industry. Frontend-only prototype.
 
+## Documentation
+
+- **Lovable / external builder — v2 scope (copy-paste):** [`docs/LOVABLE_ATLAS_V2_README.md`](./docs/LOVABLE_ATLAS_V2_README.md) — admin users, searchable dropdowns everywhere, responsive rules, agent chat UX, specialization appendix.
+
 ## Run
 
 ```
@@ -20,7 +24,7 @@ bun run dev
 
 ## Pages
 
-`/login` · `/dashboard` · `/explore` · `/devices/$deviceId` · `/compare` · `/assistant` · `/insights` · `/saved`
+`/login` · `/dashboard` · `/explore` · `/devices/$deviceId` · `/compare` · `/assistant` · `/insights` · `/saved` · `/agents` · `/journey` · `/journey/$deviceId` · `/roi`
 
 ## Demo Script (5 min)
 

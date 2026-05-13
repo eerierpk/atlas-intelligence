@@ -5,6 +5,7 @@ import { ConfidenceBadge } from "@/components/atlas/DeviceCard";
 import { SearchableCombobox } from "@/components/ui/searchable-combobox";
 import { buildDeviceReviewMessage, PROMPT_CHIPS } from "@/lib/atlas/ai";
 import { AGENT_META, useAiPanel, type AgentId } from "@/lib/atlas/ai-panel-context";
+import { getSpecialistSimulationSequence } from "@/lib/atlas/agent-simulation";
 import { buildAgentReply } from "@/lib/atlas/agent-replies";
 import { getDevice } from "@/lib/atlas/data";
 import { can } from "@/lib/atlas/permissions";
@@ -58,13 +59,38 @@ export function AtlasChatPanel() {
       await new Promise((r) => setTimeout(r, 650));
       const deviceMatch = /^\/devices\/([^/]+)\/?$/.exec(pathname);
       const deviceReviewReply = agent.id === "ask-atlas" && deviceMatch?.[1] ? buildDeviceReviewMessage(deviceMatch[1]) : null;
-      const reply = deviceReviewReply ?? buildAgentReply(agent.id, text, chips);
-      setMessages((m) => {
-        const next = [...m, reply];
-        upsertSession({ id: chatSessionId, title: `${agent.name}: ${text.slice(0, 50)}`, createdAt: Date.now(), messages: next });
-        return next;
-      });
+
+      if (deviceReviewReply) {
+        setMessages((m) => {
+          const next = [...m, deviceReviewReply];
+          upsertSession({ id: chatSessionId, title: `${agent.name}: ${text.slice(0, 50)}`, createdAt: Date.now(), messages: next });
+          return next;
+        });
+        setThinking(false);
+        return;
+      }
+
+      if (agent.id === "ask-atlas") {
+        const reply = buildAgentReply(agent.id, text, chips);
+        setMessages((m) => {
+          const next = [...m, reply];
+          upsertSession({ id: chatSessionId, title: `${agent.name}: ${text.slice(0, 50)}`, createdAt: Date.now(), messages: next });
+          return next;
+        });
+        setThinking(false);
+        return;
+      }
+
+      const sequence = getSpecialistSimulationSequence(agent.id, text, chips);
       setThinking(false);
+      for (const { delayMs, message } of sequence) {
+        await new Promise((r) => setTimeout(r, delayMs));
+        setMessages((m) => [...m, message]);
+      }
+      setMessages((m) => {
+        upsertSession({ id: chatSessionId, title: `${agent.name}: ${text.slice(0, 50)}`, createdAt: Date.now(), messages: m });
+        return m;
+      });
     },
     [pathname, upsertSession, chatSessionId, setMessages, setInput, setThinking, attachments, agent],
   );
@@ -176,7 +202,13 @@ export function AtlasChatPanel() {
             )}
           </div>
         )}
-        {messages.map((m) => (m.role === "user" ? <UserBubble key={m.id} msg={m} /> : <AssistantBubble key={m.id} msg={m} />))}
+        {messages.map((m) =>
+          m.role === "user" ? (
+            <UserBubble key={m.id} msg={m} />
+          ) : (
+            <AssistantBubble key={m.id} msg={m} assistantLabel={agent.name} />
+          ),
+        )}
         {thinking && (
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <span className="size-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
@@ -286,7 +318,7 @@ function DeviceReviewStream({ review }: { review: DeviceReviewSnapshot }) {
   );
 }
 
-function AssistantBubble({ msg }: { msg: AIMessage }) {
+function AssistantBubble({ msg, assistantLabel = "Assistant" }: { msg: AIMessage; assistantLabel?: string }) {
   return (
     <div className="self-start max-w-[95%] flex gap-2">
       <div className="size-7 rounded-md bg-gradient-to-br from-[var(--color-primary)]/30 to-[var(--color-info)]/20 grid place-items-center shrink-0">
@@ -294,7 +326,7 @@ function AssistantBubble({ msg }: { msg: AIMessage }) {
       </div>
       <div className="flex-1 min-w-0 glass-panel rounded-lg rounded-tl-sm p-3">
         <div className="flex items-center justify-between gap-2 mb-1.5">
-          <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Assistant</div>
+          <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{assistantLabel}</div>
           {msg.confidence !== undefined && !msg.deviceReview && <ConfidenceBadge value={msg.confidence} />}
         </div>
         {msg.deviceReview ? (

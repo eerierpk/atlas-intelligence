@@ -22,7 +22,7 @@ const BASE_NAV = [
   { to: "/saved", label: "Workspace", icon: Bookmark },
 ] as const;
 
-const ADMIN_ITEM = { to: "/admin", label: "Administration", icon: ShieldCheck } as const;
+const ADMIN_ITEM = { to: "/admin", label: "Users", icon: ShieldCheck } as const;
 
 export const NAV = BASE_NAV;
 

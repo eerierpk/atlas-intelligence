@@ -43,7 +43,7 @@ function AdminPage() {
     return users.filter(u => {
       if (roleFilter && u.userRole !== roleFilter) return false;
       if (!q) return true;
-      return [u.name, u.email, u.title, u.department, ...u.specializations].filter(Boolean).join(" ").toLowerCase().includes(q);
+      return [u.name, u.email, u.title, u.department, ...u.specializations, u.yearsExperience != null ? String(u.yearsExperience) : ""].filter(Boolean).join(" ").toLowerCase().includes(q);
     });
   }, [users, query, roleFilter]);
 
@@ -54,7 +54,7 @@ function AdminPage() {
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-            <ShieldCheck className="size-6 text-[var(--color-primary)]" /> Administration
+            <ShieldCheck className="size-6 text-[var(--color-primary)]" /> Users
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Provision users, manage roles, simulate credential delivery. <span className="chip ml-1 text-[10px]">Prototype</span></p>
         </div>
@@ -132,6 +132,7 @@ function AdminPage() {
 
       {editing && (
         <UserFormDialog
+          key={editing.id}
           mode="edit"
           initial={editing}
           onClose={() => setEditing(null)}

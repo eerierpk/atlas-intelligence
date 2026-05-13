@@ -29,6 +29,9 @@ export function UserFormDialog({ initial, onClose, onSubmit, mode }: Props) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [department, setDepartment] = useState(initial?.department ?? "");
   const [phone, setPhone] = useState(initial?.phone ?? "");
+  const [yearsExp, setYearsExp] = useState(
+    initial?.yearsExperience !== undefined ? String(initial.yearsExperience) : "",
+  );
   const [error, setError] = useState<string | null>(null);
 
   const submit = (e: FormEvent) => {
@@ -38,6 +41,14 @@ export function UserFormDialog({ initial, onClose, onSubmit, mode }: Props) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setError("Valid email is required.");
     if (!role) return setError("Role is required.");
     if (!gender) return setError("Gender is required.");
+    let yearsExperience: number | undefined;
+    const yTrim = yearsExp.trim();
+    if (yTrim) {
+      if (!/^\d+$/.test(yTrim)) return setError("Years of experience must be a whole number (0–80).");
+      const n = Number.parseInt(yTrim, 10);
+      if (n < 0 || n > 80) return setError("Years of experience must be between 0 and 80.");
+      yearsExperience = n;
+    }
     onSubmit({
       name: name.trim(),
       email: email.trim(),
@@ -47,6 +58,7 @@ export function UserFormDialog({ initial, onClose, onSubmit, mode }: Props) {
       title: title.trim() || undefined,
       department: department.trim() || undefined,
       phone: phone.trim() || undefined,
+      yearsExperience,
     });
   };
 
@@ -107,10 +119,20 @@ export function UserFormDialog({ initial, onClose, onSubmit, mode }: Props) {
             />
           </Field>
 
-          <div className="grid sm:grid-cols-3 gap-3">
+          <div className="grid sm:grid-cols-2 gap-3">
             <Field label="Job title"><input value={title} onChange={e => setTitle(e.target.value)} className="input" placeholder="Imaging Director" /></Field>
             <Field label="Department"><input value={department} onChange={e => setDepartment(e.target.value)} className="input" placeholder="Radiology" /></Field>
             <Field label="Phone"><input value={phone} onChange={e => setPhone(e.target.value)} className="input" placeholder="+1 555 0100" /></Field>
+            <Field label="Years of experience" hint="Optional. Whole years, 0–80 (self-reported).">
+              <input
+                value={yearsExp}
+                onChange={(e) => setYearsExp(e.target.value.replace(/\D/g, "").slice(0, 2))}
+                className="input"
+                placeholder="e.g. 12"
+                inputMode="numeric"
+                autoComplete="off"
+              />
+            </Field>
           </div>
 
           {error && <div className="text-xs text-[var(--color-destructive)]">{error}</div>}

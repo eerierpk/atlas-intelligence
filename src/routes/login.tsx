@@ -152,7 +152,7 @@ function LoginPage() {
             </button>
 
             <p className="text-[10px] text-muted-foreground leading-relaxed mt-2">
-              Self-service signup is disabled. Accounts are provisioned by an administrator via the <strong className="text-foreground">Administration</strong> module.
+              Self-service signup is disabled. Accounts are provisioned by an administrator via the <strong className="text-foreground">Users</strong> module.
             </p>
           </form>
 
