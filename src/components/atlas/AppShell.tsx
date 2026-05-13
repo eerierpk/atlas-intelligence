@@ -35,6 +35,10 @@ export function AppShell({ children, right }: { children: ReactNode; right?: Rea
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navItems = useMemo(
+    () => (can(user?.userRole, "manage:users") ? [...BASE_NAV, ADMIN_ITEM] : [...BASE_NAV]),
+    [user?.userRole],
+  );
 
   useEffect(() => { if (!user) navigate({ to: "/login" }); }, [user, navigate]);
   useEffect(() => { setMobileOpen(false); }, [path]);
