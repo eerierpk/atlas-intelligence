@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Clock, GitBranch, Save, Send } from "lucide-react";
+import { Clock, GitBranch, PanelRightClose, PanelRightOpen, Save, Send } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SearchableCombobox, type ComboOption } from "@/components/ui/searchable-combobox";
 import { DEVICES } from "@/lib/atlas/data";
 import type { Device, IntelExpertWorkspaceEntry } from "@/lib/atlas/types";
 import { useAtlas } from "@/lib/atlas/store";
+import { useAiPanelUi } from "@/lib/atlas/ai-panel-context";
+
+const DEVICE_OPTIONS: ComboOption[] = DEVICES.map(d => ({
+  value: d.id,
+  label: `${d.modality} · ${d.vendor} · ${d.name}`,
+  group: d.modality,
+}));
 
 interface VersionEntry {
   id: string;
@@ -12,7 +21,6 @@ interface VersionEntry {
   diffSummary: string;
 }
 
-/** Editable catalog-adjacent fields (prototype — not written back to catalog). */
 interface ExpertDraft {
   tagline: string;
   clinicalPositioning: string;
@@ -142,6 +150,7 @@ function PairedField({
 
 export function IntelExpertAgent({ readOnly = false }: { readOnly?: boolean }) {
   const { upsertIntelExpertSession } = useAtlas();
+  const { isOpen: aiPanelOpen } = useAiPanelUi();
   const [deviceId, setDeviceId] = useState(DEVICES[0].id);
   const device = DEVICES.find((d) => d.id === deviceId)!;
   const baseline = catalogDefaults(device);
@@ -149,6 +158,8 @@ export function IntelExpertAgent({ readOnly = false }: { readOnly?: boolean }) {
   const [history, setHistory] = useState<VersionEntry[]>([]);
   const [reviewRunning, setReviewRunning] = useState(false);
   const reviewTimer = useRef<number | null>(null);
+  const [activeTab, setActiveTab] = useState("tagline");
+  const [historyOpen, setHistoryOpen] = useState(!aiPanelOpen);
 
   useEffect(() => {
     const d = DEVICES.find((x) => x.id === deviceId)!;
@@ -156,6 +167,7 @@ export function IntelExpertAgent({ readOnly = false }: { readOnly?: boolean }) {
     setDraft(stored ?? catalogDefaults(d));
     setHistory(readHistory()[deviceId] ?? []);
     setReviewRunning(false);
+    setActiveTab("tagline");
     if (reviewTimer.current) {
       window.clearTimeout(reviewTimer.current);
       reviewTimer.current = null;
@@ -209,22 +221,35 @@ export function IntelExpertAgent({ readOnly = false }: { readOnly?: boolean }) {
   };
 
   return (
-    <div className="grid min-w-0 gap-4 lg:grid-cols-[1fr_minmax(260px,300px)]">
-      <div className="panel-elevated min-w-0 space-y-4 overflow-hidden p-4">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="shrink-0 text-[11px] uppercase tracking-wider text-muted-foreground">Device</span>
-          <select
-            value={deviceId}
-            onChange={(e) => setDeviceId(e.target.value)}
-            title={`${device.modality} · ${device.vendor} · ${device.name}`}
-            className="h-8 min-w-0 max-w-full flex-1 rounded-md border border-border bg-[var(--color-input)] px-2 text-xs outline-none sm:max-w-[min(100%,42rem)]"
+    <div className={`grid min-w-0 gap-4 ${historyOpen ? 'lg:grid-cols-[1fr_minmax(260px,300px)]' : ''}`}>
+      <div className="panel-elevated min-w-0 space-y-4 overflow-hidden p-4 sm:p-6">
+        <div className="flex min-w-0 items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+            <span className="shrink-0 text-[11px] uppercase tracking-wider text-muted-foreground">Device</span>
+            <div className="min-w-0 flex-1">
+              <SearchableCombobox
+                options={DEVICE_OPTIONS}
+                value={deviceId}
+                onChange={(v) => v && setDeviceId(v)}
+                placeholder="Search devices…"
+                searchPlaceholder="Search by modality, vendor, or name…"
+                triggerClassName="min-h-9 text-xs"
+              />
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setHistoryOpen(o => !o)}
+            title={historyOpen ? "Hide version history" : "Show version history"}
+            className={`shrink-0 mt-0.5 flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] transition-all ${
+              historyOpen
+                ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+            }`}
           >
-            {DEVICES.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.modality} · {d.vendor} · {d.name}
-              </option>
-            ))}
-          </select>
+            {historyOpen ? <PanelRightClose className="size-3.5" /> : <PanelRightOpen className="size-3.5" />}
+            <span className="hidden sm:inline">History</span>
+          </button>
         </div>
 
         {!readOnly && reviewRunning && (
@@ -238,56 +263,78 @@ export function IntelExpertAgent({ readOnly = false }: { readOnly?: boolean }) {
           </div>
         )}
 
-        <div className="space-y-4">
-          <PairedField
-            label="Tagline"
-            catalogText={baseline.tagline}
-            value={draft.tagline}
-            onChange={(v) => setField("tagline", v)}
-            disabled={readOnly}
-            rows={2}
-          />
-          <PairedField
-            label="Clinical positioning (tags / narrative)"
-            catalogText={baseline.clinicalPositioning}
-            value={draft.clinicalPositioning}
-            onChange={(v) => setField("clinicalPositioning", v)}
-            disabled={readOnly}
-            rows={3}
-          />
-          <PairedField
-            label="AI & workflow notes"
-            catalogText={baseline.aiWorkflowNotes}
-            value={draft.aiWorkflowNotes}
-            onChange={(v) => setField("aiWorkflowNotes", v)}
-            disabled={readOnly}
-            rows={3}
-          />
-          <PairedField
-            label="Standards / integration"
-            catalogText={baseline.standardsIntegration}
-            value={draft.standardsIntegration}
-            onChange={(v) => setField("standardsIntegration", v)}
-            disabled={readOnly}
-            rows={2}
-          />
-          <PairedField
-            label="Data sources (catalog notes)"
-            catalogText={baseline.dataSourceNotes}
-            value={draft.dataSourceNotes}
-            onChange={(v) => setField("dataSourceNotes", v)}
-            disabled={readOnly}
-            rows={2}
-          />
-          <PairedField
-            label="Procurement / internal notes"
-            catalogText={baseline.procurementNotes}
-            value={draft.procurementNotes}
-            onChange={(v) => setField("procurementNotes", v)}
-            disabled={readOnly}
-            rows={3}
-          />
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="flex-wrap h-auto">
+            <TabsTrigger value="tagline">Tagline</TabsTrigger>
+            <TabsTrigger value="clinical">Clinical</TabsTrigger>
+            <TabsTrigger value="ai">AI & Workflow</TabsTrigger>
+            <TabsTrigger value="standards">Standards</TabsTrigger>
+            <TabsTrigger value="sources">Data Sources</TabsTrigger>
+            <TabsTrigger value="procurement">Procurement</TabsTrigger>
+          </TabsList>
+          <div className="mt-4">
+            <TabsContent value="tagline">
+              <PairedField
+                label="Tagline"
+                catalogText={baseline.tagline}
+                value={draft.tagline}
+                onChange={(v) => setField("tagline", v)}
+                disabled={readOnly}
+                rows={2}
+              />
+            </TabsContent>
+            <TabsContent value="clinical">
+              <PairedField
+                label="Clinical positioning (tags / narrative)"
+                catalogText={baseline.clinicalPositioning}
+                value={draft.clinicalPositioning}
+                onChange={(v) => setField("clinicalPositioning", v)}
+                disabled={readOnly}
+                rows={3}
+              />
+            </TabsContent>
+            <TabsContent value="ai">
+              <PairedField
+                label="AI & workflow notes"
+                catalogText={baseline.aiWorkflowNotes}
+                value={draft.aiWorkflowNotes}
+                onChange={(v) => setField("aiWorkflowNotes", v)}
+                disabled={readOnly}
+                rows={3}
+              />
+            </TabsContent>
+            <TabsContent value="standards">
+              <PairedField
+                label="Standards / integration"
+                catalogText={baseline.standardsIntegration}
+                value={draft.standardsIntegration}
+                onChange={(v) => setField("standardsIntegration", v)}
+                disabled={readOnly}
+                rows={2}
+              />
+            </TabsContent>
+            <TabsContent value="sources">
+              <PairedField
+                label="Data sources (catalog notes)"
+                catalogText={baseline.dataSourceNotes}
+                value={draft.dataSourceNotes}
+                onChange={(v) => setField("dataSourceNotes", v)}
+                disabled={readOnly}
+                rows={2}
+              />
+            </TabsContent>
+            <TabsContent value="procurement">
+              <PairedField
+                label="Procurement / internal notes"
+                catalogText={baseline.procurementNotes}
+                value={draft.procurementNotes}
+                onChange={(v) => setField("procurementNotes", v)}
+                disabled={readOnly}
+                rows={3}
+              />
+            </TabsContent>
+          </div>
+        </Tabs>
 
         {readOnly ? (
           <div className="text-[11px] text-[var(--color-warning)]">Read-only mode — sign in as Healthcare Expert to edit.</div>
@@ -323,23 +370,38 @@ export function IntelExpertAgent({ readOnly = false }: { readOnly?: boolean }) {
         </p>
       </div>
 
-      <div className="panel-elevated min-w-0 overflow-hidden p-4">
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <GitBranch className="size-4 text-[var(--color-primary)]" /> Version history
+      {historyOpen && (
+        <div className="panel-elevated min-w-0 overflow-hidden p-4 sm:p-6 h-fit">
+          <div className="flex items-center justify-between gap-2 text-sm font-semibold">
+            <div className="flex items-center gap-2">
+              <GitBranch className="size-4 text-[var(--color-primary)]" /> Version history
+            </div>
+            <button
+              type="button"
+              onClick={() => setHistoryOpen(false)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              title="Hide version history"
+            >
+              <PanelRightClose className="size-4" />
+            </button>
+          </div>
+          {history.length === 0 ? (
+            <p className="mt-3 text-xs text-muted-foreground">No activity yet.</p>
+          ) : (
+            <ol className="relative ml-3 mt-3 space-y-3 border-l border-border">
+              {history.map((h) => (
+                <li key={h.id} className="relative pl-4">
+                  <span className="absolute -left-[5px] top-1.5 size-2.5 rounded-full bg-[var(--color-primary)]" />
+                  <div className="break-words text-xs font-medium">{h.diffSummary}</div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {new Date(h.ts).toLocaleString()} · {h.authorLabel}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
-        <ol className="relative ml-3 mt-3 space-y-3 border-l border-border">
-          {history.length === 0 && <li className="pl-4 text-xs text-muted-foreground">No activity yet.</li>}
-          {history.map((h) => (
-            <li key={h.id} className="relative pl-4">
-              <span className="absolute -left-[5px] top-1.5 size-2.5 rounded-full bg-[var(--color-primary)]" />
-              <div className="break-words text-xs font-medium">{h.diffSummary}</div>
-              <div className="text-[10px] text-muted-foreground">
-                {new Date(h.ts).toLocaleString()} · {h.authorLabel}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
+      )}
     </div>
   );
 }
