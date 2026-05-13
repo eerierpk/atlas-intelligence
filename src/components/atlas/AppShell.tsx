@@ -1,16 +1,17 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   Activity, BarChart3, Bookmark, Boxes, Bot, Calculator, GitCompare, GraduationCap, LayoutDashboard,
-  LogOut, Menu, Moon, Search, Sparkles, Sun, X, ChevronsLeft, ChevronsRight,
+  LogOut, Menu, Moon, Search, ShieldCheck, Sparkles, Sun, X, ChevronsLeft, ChevronsRight,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useAiPanelUi } from "@/lib/atlas/ai-panel-context";
+import { can } from "@/lib/atlas/permissions";
 import { useAtlas } from "@/lib/atlas/store";
 import { useTheme } from "@/lib/atlas/theme";
 import { AtlasChatPanel } from "./AtlasChatPanel";
 import { CommandPalette } from "./CommandPalette";
 
-export const NAV = [
+const BASE_NAV = [
   { to: "/dashboard", label: "Command Centre", icon: LayoutDashboard },
   { to: "/explore", label: "Devices", icon: Boxes },
   { to: "/compare", label: "Comparison", icon: GitCompare },
@@ -21,6 +22,10 @@ export const NAV = [
   { to: "/saved", label: "Workspace", icon: Bookmark },
 ] as const;
 
+const ADMIN_ITEM = { to: "/admin", label: "Administration", icon: ShieldCheck } as const;
+
+export const NAV = BASE_NAV;
+
 export function AppShell({ children, right }: { children: ReactNode; right?: ReactNode }) {
   const { user, logout, comparisonIds } = useAtlas();
   const { theme, toggle } = useTheme();
@@ -30,6 +35,10 @@ export function AppShell({ children, right }: { children: ReactNode; right?: Rea
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navItems = useMemo(
+    () => (can(user?.userRole, "manage:users") ? [...BASE_NAV, ADMIN_ITEM] : [...BASE_NAV]),
+    [user?.userRole],
+  );
 
   useEffect(() => { if (!user) navigate({ to: "/login" }); }, [user, navigate]);
   useEffect(() => { setMobileOpen(false); }, [path]);
@@ -153,7 +162,7 @@ export function AppShell({ children, right }: { children: ReactNode; right?: Rea
           </div>
 
           <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-2">
-            {NAV.map(item => {
+            {navItems.map(item => {
               const active = path === item.to || (item.to !== "/dashboard" && path.startsWith(item.to));
               return (
                 <Link
@@ -213,7 +222,7 @@ export function AppShell({ children, right }: { children: ReactNode; right?: Rea
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-[var(--color-surface)]/95 backdrop-blur border-t border-border flex items-center justify-around h-14 px-1">
-        {NAV.slice(0, 5).map(item => {
+        {navItems.slice(0, 5).map(item => {
           const active = path === item.to || (item.to !== "/dashboard" && path.startsWith(item.to));
           return (
             <Link key={item.to} to={item.to} {...(item.to === "/explore" ? { search: { q: "" } } : item.to === "/roi" ? { search: { device: "" } } : {})} className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 text-[10px] ${active ? "text-[var(--color-primary)]" : "text-muted-foreground"}`}>
@@ -233,7 +242,7 @@ export function AppShell({ children, right }: { children: ReactNode; right?: Rea
               <div className="text-sm font-semibold">Navigate</div>
               <button onClick={() => setMobileOpen(false)} className="size-8 grid place-items-center rounded-md border border-border"><X className="size-4" /></button>
             </div>
-            {NAV.map(item => {
+            {navItems.map(item => {
               const active = path === item.to || (item.to !== "/dashboard" && path.startsWith(item.to));
               return (
                 <Link key={item.to} to={item.to} {...(item.to === "/explore" ? { search: { q: "" } } : item.to === "/roi" ? { search: { device: "" } } : {})} className={`flex items-center gap-2.5 px-2.5 py-2.5 rounded-md text-sm ${active ? "bg-[var(--color-accent)]/60 text-foreground" : "text-muted-foreground"}`}>

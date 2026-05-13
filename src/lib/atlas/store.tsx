@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import type { AISession, IntelExpertWorkspaceEntry, SavedComparison } from "./types";
 
-export type UserRole = "Student" | "Healthcare Professional" | "Healthcare Expert" | "Business / Stakeholder";
+export type UserRole = "Student" | "Healthcare Professional" | "Healthcare Expert" | "Business / Stakeholder" | "Admin";
 
 export interface AtlasUser {
   name: string;
@@ -13,11 +13,16 @@ export interface AtlasUser {
   gender?: string;
   yearsExperience?: number;
   specialization?: string;
+  /** Multi-select specialization tags from Appendix A taxonomy. */
+  specializations?: string[];
   credentials?: string;
+  title?: string;
 }
 
 /** Demo expert email — signing in with this address grants Healthcare Expert role (prototype). */
 export const DEMO_EXPERT_EMAIL = "expert.demo@medintel.io";
+/** Demo admin email — signing in with this address grants Admin role (prototype). */
+export const DEMO_ADMIN_EMAIL = "admin@medintel.io";
 
 interface AtlasState {
   user: AtlasUser | null;
@@ -61,15 +66,22 @@ export function AtlasProvider({ children }: { children: ReactNode }) {
     const local = trimmed.split("@")[0] ?? "";
     const defaultName =
       local.replace(/[._-]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || "Demo User";
-    const isExpertDemo =
-      trimmed.toLowerCase() === DEMO_EXPERT_EMAIL.toLowerCase() || opts?.userRole === "Healthcare Expert";
+    const lower = trimmed.toLowerCase();
+    const isExpertDemo = lower === DEMO_EXPERT_EMAIL.toLowerCase() || opts?.userRole === "Healthcare Expert";
+    const isAdminDemo = lower === DEMO_ADMIN_EMAIL.toLowerCase() || opts?.userRole === "Admin";
     setUser({
       name: opts?.name ?? defaultName,
       email: trimmed,
       role:
         opts?.role ??
-        (isExpertDemo ? "Clinical Content Reviewer — Demo" : "Healthcare Infrastructure Strategy Lead"),
-      userRole: opts?.userRole ?? (isExpertDemo ? "Healthcare Expert" : "Healthcare Professional"),
+        (isAdminDemo
+          ? "Atlas Administrator — Demo"
+          : isExpertDemo
+            ? "Clinical Content Reviewer — Demo"
+            : "Healthcare Infrastructure Strategy Lead"),
+      userRole:
+        opts?.userRole ??
+        (isAdminDemo ? "Admin" : isExpertDemo ? "Healthcare Expert" : "Healthcare Professional"),
     });
   }, []);
   const signup = useCallback((data: Omit<AtlasUser, "role"> & { role?: string }) => {

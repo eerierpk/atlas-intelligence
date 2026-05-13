@@ -1,23 +1,22 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Activity, ArrowRight, ShieldCheck, Sparkles, Lock, UserPlus } from "lucide-react";
+import { Activity, ArrowRight, ShieldCheck, Sparkles, Lock, Mail, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AGENTS } from "@/lib/atlas/agents";
-import { DEMO_EXPERT_EMAIL, useAtlas } from "@/lib/atlas/store";
-import { SignupWizard } from "@/components/auth/SignupWizard";
+import { DEMO_ADMIN_EMAIL, DEMO_EXPERT_EMAIL, useAtlas } from "@/lib/atlas/store";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
 function LoginPage() {
-  const { user, login, signup } = useAtlas();
-  const [showSignup, setShowSignup] = useState(false);
+  const { user, login } = useAtlas();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showRequest, setShowRequest] = useState(false);
 
   useEffect(() => { if (user) navigate({ to: "/dashboard" }); }, [user, navigate]);
 
@@ -36,12 +35,19 @@ function LoginPage() {
     login("demo.user@medintel.io");
     navigate({ to: "/dashboard" });
   };
-
   const demoExpertLogin = () => {
     login(DEMO_EXPERT_EMAIL, {
       name: "Dr. Demo Expert",
       role: "Clinical Content Reviewer — Demo",
       userRole: "Healthcare Expert",
+    });
+    navigate({ to: "/dashboard" });
+  };
+  const demoAdminLogin = () => {
+    login(DEMO_ADMIN_EMAIL, {
+      name: "Atlas Administrator",
+      role: "Atlas Administrator — Demo",
+      userRole: "Admin",
     });
     navigate({ to: "/dashboard" });
   };
@@ -112,40 +118,41 @@ function LoginPage() {
               <input
                 type="email" autoFocus value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="you@hospital.org"
-                className="w-full h-10 px-3 rounded-md bg-[var(--color-input)] border border-border focus:border-primary outline-none text-sm"
+                className="w-full h-11 px-3 rounded-md bg-[var(--color-input)] border border-border focus:border-primary outline-none text-sm"
               />
             </Field>
             <Field label="Password">
               <input
                 type="password" value={password} onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full h-10 px-3 rounded-md bg-[var(--color-input)] border border-border focus:border-primary outline-none text-sm"
+                className="w-full h-11 px-3 rounded-md bg-[var(--color-input)] border border-border focus:border-primary outline-none text-sm"
               />
             </Field>
             {error && <div className="text-xs text-[var(--color-destructive)]">{error}</div>}
 
             <button
               type="submit" disabled={loading}
-              className="h-10 mt-1 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] font-medium text-sm flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-60"
+              className="h-11 mt-1 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] font-medium text-sm flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-60"
             >
               {loading ? "Authenticating…" : <>Sign in <ArrowRight className="size-4" /></>}
             </button>
 
-            <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={demoLogin} className="h-10 rounded-md border border-border hover:border-primary/40 text-sm flex items-center justify-center gap-2">
-                <Lock className="size-3.5" /> Demo user
-              </button>
-              <button type="button" onClick={demoExpertLogin} className="h-10 rounded-md border border-border hover:border-primary/40 text-sm flex items-center justify-center gap-2">
-                <Lock className="size-3.5 text-[var(--color-primary)]" /> Demo expert
-              </button>
-              <button type="button" onClick={() => setShowSignup(true)} className="col-span-2 h-10 rounded-md border border-border hover:border-primary/40 text-sm flex items-center justify-center gap-2">
-                <UserPlus className="size-3.5" /> Sign up
-              </button>
+            <div className="grid grid-cols-3 gap-2">
+              <DemoButton onClick={demoLogin} label="User" />
+              <DemoButton onClick={demoExpertLogin} label="Expert" tone />
+              <DemoButton onClick={demoAdminLogin} label="Admin" tone />
             </div>
+
+            <button
+              type="button"
+              onClick={() => setShowRequest(true)}
+              className="h-11 mt-1 rounded-md border border-dashed border-border hover:border-primary/40 text-sm flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <Mail className="size-3.5" /> Request access
+            </button>
+
             <p className="text-[10px] text-muted-foreground leading-relaxed mt-2">
-              <span className="text-foreground/80 font-medium">Expert demo sign-in:</span>{" "}
-              <span className="font-mono text-foreground/90">{DEMO_EXPERT_EMAIL}</span>
-              {" "}— use the form above with any password (4+ chars), or tap <strong className="text-foreground">Demo expert</strong>.
+              Self-service signup is disabled. Accounts are provisioned by an administrator via the <strong className="text-foreground">Administration</strong> module.
             </p>
           </form>
 
@@ -157,17 +164,16 @@ function LoginPage() {
         </motion.div>
       </div>
 
-      {showSignup && (
-        <SignupWizard
-          onClose={() => setShowSignup(false)}
-          onComplete={(d) => {
-            signup(d);
-            setShowSignup(false);
-            navigate({ to: "/dashboard" });
-          }}
-        />
-      )}
+      {showRequest && <RequestAccessDialog onClose={() => setShowRequest(false)} />}
     </div>
+  );
+}
+
+function DemoButton({ onClick, label, tone }: { onClick: () => void; label: string; tone?: boolean }) {
+  return (
+    <button type="button" onClick={onClick} className="h-11 rounded-md border border-border hover:border-primary/40 text-xs flex items-center justify-center gap-1.5">
+      <Lock className={`size-3.5 ${tone ? "text-[var(--color-primary)]" : ""}`} /> {label}
+    </button>
   );
 }
 
@@ -177,5 +183,37 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</span>
       {children}
     </label>
+  );
+}
+
+function RequestAccessDialog({ onClose }: { onClose: () => void }) {
+  const [sent, setSent] = useState(false);
+  const [email, setEmail] = useState("");
+  const [reason, setReason] = useState("");
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-background/70 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="glass-panel w-full max-w-md rounded-lg p-5" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-2">
+          <ShieldAlert className="size-4 text-[var(--color-primary)]" />
+          <div className="text-sm font-semibold">Request access</div>
+        </div>
+        {!sent ? (
+          <form onSubmit={(e) => { e.preventDefault(); setSent(true); }} className="mt-3 space-y-3">
+            <p className="text-xs text-muted-foreground">Send a provisioning request to the Atlas administrator. No account is created without admin approval.</p>
+            <input value={email} onChange={e => setEmail(e.target.value)} required type="email" placeholder="Work email" className="w-full h-11 px-3 rounded-md bg-[var(--color-input)] border border-border outline-none text-sm focus:border-primary" />
+            <textarea value={reason} onChange={e => setReason(e.target.value)} rows={3} placeholder="Briefly describe your role and intended use." className="w-full px-3 py-2 rounded-md bg-[var(--color-input)] border border-border outline-none text-sm focus:border-primary" />
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={onClose} className="h-10 px-3 rounded-md border border-border text-sm">Cancel</button>
+              <button type="submit" className="h-10 px-4 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm font-medium">Send request</button>
+            </div>
+          </form>
+        ) : (
+          <div className="mt-3 space-y-3">
+            <div className="text-xs text-muted-foreground">Your request was queued (simulated). An administrator will review and provision an account if approved.</div>
+            <button onClick={onClose} className="h-10 px-4 rounded-md bg-[var(--color-primary)] text-[var(--color-primary-foreground)] text-sm font-medium">Close</button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
