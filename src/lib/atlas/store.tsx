@@ -66,15 +66,22 @@ export function AtlasProvider({ children }: { children: ReactNode }) {
     const local = trimmed.split("@")[0] ?? "";
     const defaultName =
       local.replace(/[._-]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || "Demo User";
-    const isExpertDemo =
-      trimmed.toLowerCase() === DEMO_EXPERT_EMAIL.toLowerCase() || opts?.userRole === "Healthcare Expert";
+    const lower = trimmed.toLowerCase();
+    const isExpertDemo = lower === DEMO_EXPERT_EMAIL.toLowerCase() || opts?.userRole === "Healthcare Expert";
+    const isAdminDemo = lower === DEMO_ADMIN_EMAIL.toLowerCase() || opts?.userRole === "Admin";
     setUser({
       name: opts?.name ?? defaultName,
       email: trimmed,
       role:
         opts?.role ??
-        (isExpertDemo ? "Clinical Content Reviewer — Demo" : "Healthcare Infrastructure Strategy Lead"),
-      userRole: opts?.userRole ?? (isExpertDemo ? "Healthcare Expert" : "Healthcare Professional"),
+        (isAdminDemo
+          ? "Atlas Administrator — Demo"
+          : isExpertDemo
+            ? "Clinical Content Reviewer — Demo"
+            : "Healthcare Infrastructure Strategy Lead"),
+      userRole:
+        opts?.userRole ??
+        (isAdminDemo ? "Admin" : isExpertDemo ? "Healthcare Expert" : "Healthcare Professional"),
     });
   }, []);
   const signup = useCallback((data: Omit<AtlasUser, "role"> & { role?: string }) => {

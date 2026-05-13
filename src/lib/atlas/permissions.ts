@@ -7,13 +7,15 @@ export type Permission =
   | "view:agents"
   | "run:agents"
   | "approve:content"        // expert review queue
-  | "view:business-tools";
+  | "view:business-tools"
+  | "manage:users";          // admin user provisioning
 
 const MAP: Record<UserRole, Permission[]> = {
   Student: ["view:devices", "view:agents"],
   "Healthcare Professional": ["view:devices", "view:agents", "run:agents"],
   "Healthcare Expert": ["view:devices", "edit:devices", "view:agents", "run:agents", "approve:content"],
   "Business / Stakeholder": ["view:devices", "view:business-tools", "view:agents"],
+  Admin: ["view:devices", "edit:devices", "view:agents", "run:agents", "approve:content", "view:business-tools", "manage:users"],
 };
 
 export function can(role: UserRole | undefined, perm: Permission): boolean {
