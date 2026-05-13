@@ -1,16 +1,17 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   Activity, BarChart3, Bookmark, Boxes, Bot, Calculator, GitCompare, GraduationCap, LayoutDashboard,
-  LogOut, Menu, Moon, Search, Sparkles, Sun, X, ChevronsLeft, ChevronsRight,
+  LogOut, Menu, Moon, Search, ShieldCheck, Sparkles, Sun, X, ChevronsLeft, ChevronsRight,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useAiPanelUi } from "@/lib/atlas/ai-panel-context";
+import { can } from "@/lib/atlas/permissions";
 import { useAtlas } from "@/lib/atlas/store";
 import { useTheme } from "@/lib/atlas/theme";
 import { AtlasChatPanel } from "./AtlasChatPanel";
 import { CommandPalette } from "./CommandPalette";
 
-export const NAV = [
+const BASE_NAV = [
   { to: "/dashboard", label: "Command Centre", icon: LayoutDashboard },
   { to: "/explore", label: "Devices", icon: Boxes },
   { to: "/compare", label: "Comparison", icon: GitCompare },
@@ -20,6 +21,10 @@ export const NAV = [
   { to: "/agents", label: "Agents", icon: Bot },
   { to: "/saved", label: "Workspace", icon: Bookmark },
 ] as const;
+
+const ADMIN_ITEM = { to: "/admin", label: "Administration", icon: ShieldCheck } as const;
+
+export const NAV = BASE_NAV;
 
 export function AppShell({ children, right }: { children: ReactNode; right?: ReactNode }) {
   const { user, logout, comparisonIds } = useAtlas();
