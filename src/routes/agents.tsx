@@ -13,22 +13,23 @@ export const Route = createFileRoute("/agents")({
   component: AgentsPage,
 });
 
+type LauncherKey = "ask-atlas" | "ingest" | "expert" | "scout";
+
 const LAUNCHERS: {
-  id: AgentId; name: string; purpose: string; icon: React.ComponentType<{ className?: string }>;
+  id: LauncherKey; name: string; purpose: string; icon: React.ComponentType<{ className?: string }>;
   expertOnly?: boolean; starter: string;
 }[] = [
   { id: "ask-atlas", name: "Ask Atlas", purpose: "General Q&A, catalog queries, navigation, scenario reasoning.", icon: Sparkles, starter: "Best MRI for neuro + oncology with moderate budget" },
   { id: "ingest", name: "Document / video ingest", purpose: "Simulated extraction of summaries from PDFs, transcripts, and public links.", icon: FileText, starter: "Summarize the key claims from spec-sheet.pdf" },
-  { id: "expert" as never as AgentId, name: "Intel Expert", purpose: "Human-in-the-loop catalog review — propose, accept, reject, version edits.", icon: GitBranch, expertOnly: true, starter: "Draft an updated tagline for the Magnetom Vida" },
+  { id: "expert", name: "Intel Expert", purpose: "Human-in-the-loop catalog review — propose, accept, reject, version edits.", icon: GitBranch, expertOnly: true, starter: "Draft an updated tagline for the Magnetom Vida" },
   { id: "scout", name: "Public web scout", purpose: "Simulated competitor scouting from public sources, scoped by device and region.", icon: Globe2, starter: "Find competitors to GE Revolution Apex CT in EU" },
 ];
 
-// Map launcher id -> AgentId in panel context (intel-expert special-case label)
-const TO_PANEL_ID: Record<string, AgentId> = {
+const TO_PANEL_ID: Record<LauncherKey, AgentId> = {
   "ask-atlas": "ask-atlas",
   ingest: "ingest",
   scout: "scout",
-  "expert": "intel-expert",
+  expert: "intel-expert",
 };
 
 function AgentsPage() {
