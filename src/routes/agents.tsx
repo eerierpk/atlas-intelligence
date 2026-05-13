@@ -49,7 +49,7 @@ function AgentsPage() {
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-2 min-w-0">
         {LAUNCHERS.map(a => {
-          const panelId = TO_PANEL_ID[a.id as string] ?? a.id;
+          const panelId = TO_PANEL_ID[a.id];
           const locked = a.expertOnly && !can(role, "approve:content");
           return (
             <div key={a.id as string} className="glass-panel p-4 flex flex-col gap-3 min-w-0">
