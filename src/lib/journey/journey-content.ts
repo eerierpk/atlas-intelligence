@@ -246,7 +246,7 @@ const USE_NOTES: Record<Modality, string[]> = {
   ],
 };
 
-/** Educational sample images — external URLs are Wikimedia Commons; verify license before production redistribution. */
+/** Educational sample images — local static files under public/journey/. */
 const FIG_BASE: SampleFigure[] = [
   {
     src: journeyAssetUrls.dicomObjectSchematic,
@@ -285,34 +285,34 @@ const FIG_BY_MODALITY: Record<Modality, SampleFigure[]> = {
       credit: "MedIntel Atlas — educational diagram",
     },
     {
-      src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/CT_of_the_heart_with_contrast.jpg/640px-CT_of_the_heart_with_contrast.jpg",
+      src: "/journey/ct.jpg",
       alt: "Axial CT image of the heart with intravenous contrast",
       caption: "Example CT slice: high spatial resolution of anatomy; windowing changes lung vs soft-tissue display.",
-      credit: "Wikimedia Commons — public domain (NIH)",
+      credit: "MedIntel Atlas — educational image",
     },
   ],
   "X-ray": [
     {
-      src: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Normal_posteroanterior_%28PA%29_chest_radiograph_%28X-ray%29.jpg/800px-Normal_posteroanterior_%28PA%29_chest_radiograph_%28X-ray%29.jpg",
+      src: "/journey/xray.jpg",
       alt: "Normal posteroanterior chest radiograph",
       caption: "Example projection radiograph: positioning and inspiration level strongly affect diagnostic quality.",
-      credit: "Wikimedia Commons — CC BY-SA 3.0",
+      credit: "MedIntel Atlas — educational image",
     },
   ],
   Ultrasound: [
     {
-      src: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Ultrasound_of_human_heart%2C_apical_4_chamber_view.jpg/640px-Ultrasound_of_human_heart%2C_apical_4_chamber_view.jpg",
+      src: "/journey/ultrasound.jpg",
       alt: "Apical four-chamber echocardiography still frame",
       caption: "Example ultrasound: real-time tomographic planes; speckle and gain settings affect interpretation.",
-      credit: "Wikimedia Commons — CC BY-SA 3.0",
+      credit: "MedIntel Atlas — educational image",
     },
   ],
   Mammography: [
     {
-      src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mammogram.jpg/640px-Mammogram.jpg",
+      src: "/journey/mammography.jpg",
       alt: "Mammogram example",
       caption: "Example mammographic acquisition; clinical units use vendor-specific processing and QC targets.",
-      credit: "Wikimedia Commons — public domain",
+      credit: "MedIntel Atlas — educational image",
     },
   ],
   "PET/CT": [
@@ -323,10 +323,10 @@ const FIG_BY_MODALITY: Record<Modality, SampleFigure[]> = {
       credit: "MedIntel Atlas — educational diagram",
     },
     {
-      src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/PET-CT_of_lung_cancer.jpg/640px-PET-CT_of_lung_cancer.jpg",
+      src: "/journey/pet-ct.jpg",
       alt: "Fused PET/CT showing hypermetabolic lesion",
       caption: "Example fused display: hot spots on PET aligned to CT anatomy (educational case image).",
-      credit: "Wikimedia Commons — CC BY-SA 3.0",
+      credit: "MedIntel Atlas — educational image",
     },
   ],
 };
